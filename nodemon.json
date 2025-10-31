@@ -1,0 +1,6 @@
+{
+  "watch": ["."],
+  "ext": "ts,js,json",
+  "ignore": ["node_modules", "generated"],
+  "exec": "node --no-warnings --loader ts-node/esm server.ts"
+}
