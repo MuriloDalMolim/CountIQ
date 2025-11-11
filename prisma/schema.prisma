@@ -14,7 +14,18 @@ datasource db {
 }
 
 model company {
-    companyid   Int     @id @default(autoincrement())
+    companyid   Int         @id @default(autoincrement())
     name        String
-    cnpj        String     @unique
+    cnpj        String      @unique
+
+    users user[]
+}
+
+model user {
+    userid      Int         @id @default(autoincrement())
+    email       String      @unique
+    password    String
+    name        String
+    companyid   Int
+    company     company @relation(fields: [companyid], references: [companyid])
 }
