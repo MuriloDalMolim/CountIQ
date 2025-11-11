@@ -1,49 +1,57 @@
 import { companyService } from "../service/companyService.js";
 import type { Request, Response } from "express";
 
+interface auth extends Request{
+    companyid?: number,
+    userid?: number
+}
 
 export const companyController = {
     
-    async createCompany(req: Request,res: Response){
+    async createCompany(req: auth,res: Response){
         try{
             const {name,cnpj} = req.body
+
+            if (!cnpj || !name) {
+                return res.status(400).json({ error: "CNPJ e nome são obrigatórios para o cadastro." });
+            }
 
             const company = await companyService.createCompany({name,cnpj})
             res.status(201).json(company)
+
         } catch (error){
             console.log(error)
-            res.status(500).json({
-                error: "Erro ao criar empresa"
-            })
+            res.status(500).json({ error: "Erro ao criar empresa" })
         }
     } ,
 
-    async updateCompany(req: Request,res: Response){
+    async updateCompany(req: auth,res: Response){
         try{
-            const companyid = Number(req.params.companyid)
-            const {name,cnpj} = req.body
+            const companyidUpdate = Number(req.params.companyid)
+            if(!req.companyid){
+                return res.status(401).json({error: "Usuário não autenticado"})
+            }
 
-            const company = await companyService.updateCompany(companyid, {name,cnpj})
+            const company = await companyService.updateCompany(companyidUpdate, req.body, req.companyid)
             res.json(company)
         } catch(error){
             console.log(error)
-            res.status(500).json({
-                error: "Erro ao editar empresa"
-            })
+            res.status(500).json({ error: "Erro ao editar empresa" })
         }
     },
 
-    async deleteCompany(req: Request,res: Response){
+    async deleteCompany(req: auth,res: Response){
         try{
-            const companyid = Number(req.params.companyid)
+            const companyidDelete = Number(req.params.companyid)
+            if (!req.companyid){
+                return res.status(401).json({error: "Usuário não autenticado"})
+            }
 
-            const company = await companyService.deleteCompany(companyid )
+            const company = await companyService.deleteCompany(companyidDelete, req.companyid )
             res.json(company)
         }catch(error){
             console.log(error)
-            res.status(500).json({
-                error: "Erro ao deleter empresa"
-            })
+            res.status(500).json({ error: "Erro ao deleter empresa" })
         }
     }
 }

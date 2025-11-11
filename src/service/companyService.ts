@@ -8,21 +8,37 @@ interface companyData {
 export const companyService = {
     
     async createCompany({name,cnpj}: companyData){
-        return await prisma.company.create({
-            data: {name,cnpj} 
-        })
+        try{
+            return await prisma.company.create({
+                data: {name,cnpj} 
+            })
+        }catch (error){
+            throw error;
+        }
     },
 
-    async updateCompany(companyid: number, {name,cnpj}: companyData){
-        return await prisma.company.update({
-            where:{ companyid },
-            data:{ name, cnpj }
-        })
+    async updateCompany(companyidUpdate: number, data: companyData, authId: number){
+        if( companyidUpdate !== authId){
+            throw new Error("Acesso negado. Você não pode editar esta empresa.");
+        }
+
+        try{
+            return await prisma.company.update({
+                where:{ companyid: companyidUpdate },
+                data:{ name: data.name, cnpj: data.cnpj }
+            })
+        }   catch (error){
+                console.log(error)
+            }
     },
 
-    async deleteCompany(companyid: number){
+    async deleteCompany(companyidDelete: number, authId: number){
+        if (companyidDelete !== authId) {
+            throw new Error("Acesso negado. Você não pode deletar esta empresa.");
+        }
+
         return await prisma.company.delete({
-            where:{ companyid }
+            where:{ companyid: companyidDelete }
         })
     }
     
