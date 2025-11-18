@@ -14,18 +14,21 @@ datasource db {
 }
 
 model company {
-    companyid   Int         @id @default(autoincrement())
-    name        String
-    cnpj        String      @unique
+    companyid       Int         @id @default(autoincrement())
+    name            String
+    cnpj            String      @unique
+    inactiveflag    String      @default("F")
 
     users user[]
 }
 
 model user {
-    userid      Int         @id @default(autoincrement())
-    email       String      @unique
-    password    String
-    name        String
-    companyid   Int
-    company     company @relation(fields: [companyid], references: [companyid])
+    userid          Int         @id @default(autoincrement())
+    name            String
+    email           String      @unique
+    password        String
+    inactiveflag    String      @default("F") @db.Char(1)
+    adminflag       String      @default("F") @db.Char(1)
+    companyid       Int
+    company         company     @relation(fields: [companyid], references: [companyid])
 }

@@ -7,23 +7,6 @@ interface auth extends Request{
 }
 
 export const companyController = {
-    
-    async createCompany(req: auth,res: Response){
-        try{
-            const {name,cnpj} = req.body
-
-            if (!cnpj || !name) {
-                return res.status(400).json({ error: "CNPJ e nome são obrigatórios para o cadastro." });
-            }
-
-            const company = await companyService.createCompany({name,cnpj})
-            res.status(201).json(company)
-
-        } catch (error){
-            console.log(error)
-            res.status(500).json({ error: "Erro ao criar empresa" })
-        }
-    } ,
 
     async updateCompany(req: auth,res: Response){
         try{
@@ -42,12 +25,12 @@ export const companyController = {
 
     async deleteCompany(req: auth,res: Response){
         try{
-            const companyidDelete = Number(req.params.companyid)
+            const companyidInactive = Number(req.params.companyid)
             if (!req.companyid){
                 return res.status(401).json({error: "Usuário não autenticado"})
             }
 
-            const company = await companyService.deleteCompany(companyidDelete, req.companyid )
+            const company = await companyService.deleteCompany(companyidInactive, req.body, req.companyid )
             res.json(company)
         }catch(error){
             console.log(error)

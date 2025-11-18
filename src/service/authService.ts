@@ -6,7 +6,7 @@ interface login{
     email: string,
     password: string
 }
-
+ 
 interface SignUpData {
 
   companyName: string;
@@ -19,9 +19,12 @@ interface SignUpData {
 
 export const authService = {
     async login({email, password}: login){
-        const user = await prisma.user.findUnique({
+        const user = await prisma.user.findFirst({
             where:{
-                email
+                email: email,
+            },
+            include:{
+                company: true
             }
         })
 
@@ -29,9 +32,17 @@ export const authService = {
             throw new Error("Email ou senha inválidos")
         }
 
+        if(user.inactiveflag !== "F"){
+            throw new Error("Este usuário está inativo")
+        }
+
+        if (user.company.inactiveflag !== "F") {
+            throw new Error("A empresa desta conta está inativa");
+        }
+
         const checkPassword = await bcrypt.compare(password, user.password)
             if (!checkPassword) {
-                throw new Error("Email ou senha inválidos.");
+                throw new Error("Email ou senha inválidos");
             }
 
         const secret = process.env.JWT_SECRET
@@ -41,7 +52,8 @@ export const authService = {
 
         const tokenData ={
             userid: user.userid,
-            companyid: user.companyid
+            companyid: user.companyid,
+            adminflag: user.adminflag
         }
 
         const token = jwt.sign(tokenData, secret,{
@@ -53,6 +65,8 @@ export const authService = {
                 userid: user.userid,
                 email: user.email,
                 name: user.name,
+                inactiveflag: user.inactiveflag,
+                adminflag: user.adminflag,
                 companyid: user.companyid
             },
             token: token
@@ -75,14 +89,16 @@ export const authService = {
                     data: {
                         name: data.userName,
                         email: data.userEmail,
+                        adminflag: 'T',
                         password: hash,
-                        companyid: company.companyid
+                        companyid: company.companyid,
                     },
                     select: { 
                         userid: true,
                         email: true,
                         name: true,
-                        companyid: true
+                        adminflag: true,
+                        companyid: true,
                     }
                 })
                 return {company,user}
@@ -95,7 +111,8 @@ export const authService = {
             
             const tokenData = {
                 userid: result.user.userid,
-                companyid: result.user.companyid
+                companyid: result.user.companyid,
+                adminflag: result.user.adminflag
             }
 
             const token = jwt.sign(tokenData, secret, { expiresIn: "1d" });

@@ -6,6 +6,7 @@ declare global {
         interface Request{
             userid?: number
             companyid?: number
+            adminflag?: 'T' | 'F'
         }
     }
 }
@@ -36,6 +37,7 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction) 
         const payload = jwt.verify(token, secret);
         req.userid = (payload as jwt.JwtPayload).userid
         req.companyid = (payload as jwt.JwtPayload).companyid
+        req.adminflag = (payload as jwt.JwtPayload).adminflag
         next()
     }catch (error){
         if (error instanceof jwt.JsonWebTokenError) {
@@ -44,4 +46,4 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction) 
         console.log(error)
         return res.status(500).json({ error: "Erro ao validar autenticação." })
     }
-}
+} 

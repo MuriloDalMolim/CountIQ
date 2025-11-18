@@ -1,4 +1,3 @@
-import { request } from "http";
 import { authService } from "../service/authService.js";
 import type { Request, Response } from "express";
 
@@ -13,6 +12,12 @@ import type { Request, Response } from "express";
                 const result = await authService.login({email, password})
                 res.json(result)
             } catch (error){
+                if (error instanceof Error) {
+                    if (error.message.includes("inválidos") || error.message.includes("inativa") || error.message.includes("inativo")) {
+                        return res.status(401).json({ error: error.message }); // 401 Unauthorized
+                    }
+                }
+
                 console.log(error);
                 res.status(500).json({ error: "Erro no servidor." });
             }

@@ -3,7 +3,8 @@ import type { Request, Response } from "express";
 
 interface auth extends Request{
     companyid?: number,
-    userid?: number
+    userid?: number,
+    adminflag?: 'T' | 'F'
 }
 
 export const userController ={
@@ -22,7 +23,7 @@ export const userController ={
 
     async createUser(req: auth, res: Response){
         try{
-            const {email,password,name} = req.body
+            const {email,password,name,adminflag} = req.body
             if(!req.companyid){
                 return res.status(401).json({ error: "Usuário não autenticado." });
             }
@@ -54,7 +55,7 @@ export const userController ={
             }
 
             const user= await userService.updateUser(useridUpdate, userToUpdate, req.companyid)
-                res.json(user)
+            res.status(200).json(user)
         } catch (error){
             console.log(error)
             res.status(500).json({ error: "Erro ao atualizar usuário" })
@@ -64,20 +65,26 @@ export const userController ={
     async deleteUser(req: auth, res: Response){
         try{
             const useridDelete = Number(req.params.userid)
+            const userToDelete = req.body
 
-            if(!req.companyid || !req.userid){
+            if(!req.companyid || !req.userid || !req.adminflag){
                 return res.status(401).json({error: "Usuário não autenticado"})
             }
 
+            if (req.adminflag !== 'T') {
+                return res.status(403).json({ error: "Acesso negado. Apenas usuários ADMIN podem alterar esse campo" });
+            }
+            
             if(useridDelete === req.userid){
-                return res.status(403).json({error: "Não é possível deletar o próprio cadastro"})
+                return res.status(403).json({error: "Não é possível inativar ou alterar o campo de ADMIN do próprio cadastro"})
             }
 
-            const user = await userService.deleteUser(useridDelete,req.companyid)
+            const user = await userService.deleteUser(useridDelete, userToDelete, req.companyid)
             res.status(200).json(user)
+
         } catch (error){
             console.log(error)
-            res.status(500).json({ error: "Erro interno ao deletar usuário" })
+            res.status(500).json({ error: "Erro ao deletar usuário" })
         }
     }
 }
