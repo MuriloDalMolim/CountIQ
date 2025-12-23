@@ -10,7 +10,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url = env("DATABASE_URL")
 }
 
 model company {
@@ -20,6 +20,7 @@ model company {
     inactiveflag    String      @default("F")
 
     users user[]
+    products product[]
 }
 
 model user {
@@ -29,6 +30,15 @@ model user {
     password        String
     inactiveflag    String      @default("F") @db.Char(1)
     adminflag       String      @default("F") @db.Char(1)
+    companyid       Int
+    company         company     @relation(fields: [companyid], references: [companyid])
+}
+
+model product {
+    productid       Int         @id @default(autoincrement())
+    description     String
+    barcode         String         @unique
+    inactiveflag    String      @default("F") @db.Char(1)
     companyid       Int
     company         company     @relation(fields: [companyid], references: [companyid])
 }
