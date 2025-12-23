@@ -24,18 +24,23 @@ export const userController ={
     async createUser(req: auth, res: Response){
         try{
             const {email,password,name,adminflag} = req.body
-            if(!req.companyid){
-                return res.status(401).json({ error: "Usuário não autenticado." });
+            if(!req.companyid || !req.userid || !req.adminflag){
+                return res.status(401).json({ error: "Usuário não autenticado." })
+            }
+
+            if (req.adminflag !== 'T') {
+                return res.status(403).json({ error: "Acesso negado. Apenas usuários ADMIN podem realizar o cadastro de outros usuários" })
             }
 
             if (!email || !password || !name) { 
-                return res.status(400).json({ error: "Email, senha e nome são obrigatórios para o cadastro." });
+                return res.status(400).json({ error: "Email, senha e nome são obrigatórios para o cadastro." })
             }
 
             const user = await userService.createUser({
                 email,
                 password,
                 name,
+                adminflag,
                 companyid: req.companyid
             })
             res.status(201).json(user);
@@ -47,44 +52,26 @@ export const userController ={
 
     async updateUser(req: auth, res: Response){
         try{
-            const useridUpdate = Number(req.params.userid)
+            const userIdUpdate = Number(req.params.userid)
             const userToUpdate = req.body
 
-            if(!req.companyid){
+            if(!req.companyid || !req.userid || !req.adminflag){
                 return res.status(400).json({ error: "Usuário não autenticado"})
             }
 
-            const user= await userService.updateUser(useridUpdate, userToUpdate, req.companyid)
+            if (req.adminflag !== 'T') {
+                return res.status(403).json({ error: "Acesso negado. Apenas usuários ADMIN podem alterar campos de usuários" })
+            }
+
+            const user= await userService.updateUser(
+                userIdUpdate, 
+                userToUpdate, 
+                req.companyid
+            )
             res.status(200).json(user)
         } catch (error){
             console.log(error)
             res.status(500).json({ error: "Erro ao atualizar usuário" })
-        }
-    },
-
-    async deleteUser(req: auth, res: Response){
-        try{
-            const useridDelete = Number(req.params.userid)
-            const userToDelete = req.body
-
-            if(!req.companyid || !req.userid || !req.adminflag){
-                return res.status(401).json({error: "Usuário não autenticado"})
-            }
-
-            if (req.adminflag !== 'T') {
-                return res.status(403).json({ error: "Acesso negado. Apenas usuários ADMIN podem alterar esse campo" });
-            }
-            
-            if(useridDelete === req.userid){
-                return res.status(403).json({error: "Não é possível inativar ou alterar o campo de ADMIN do próprio cadastro"})
-            }
-
-            const user = await userService.deleteUser(useridDelete, userToDelete, req.companyid)
-            res.status(200).json(user)
-
-        } catch (error){
-            console.log(error)
-            res.status(500).json({ error: "Erro ao deletar usuário" })
         }
     }
 }

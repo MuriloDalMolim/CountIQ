@@ -15,26 +15,15 @@ export const companyController = {
                 return res.status(401).json({error: "Usuário não autenticado"})
             }
 
+            if (req.adminflag !== 'T') {
+                return res.status(403).json({ error: "Acesso negado. Apenas usuários ADMIN podem alterar esse campo" });
+            }
+
             const company = await companyService.updateCompany(companyidUpdate, req.body, req.companyid)
             res.json(company)
         } catch(error){
             console.log(error)
             res.status(500).json({ error: "Erro ao editar empresa" })
-        }
-    },
-
-    async deleteCompany(req: auth,res: Response){
-        try{
-            const companyidInactive = Number(req.params.companyid)
-            if (!req.companyid){
-                return res.status(401).json({error: "Usuário não autenticado"})
-            }
-
-            const company = await companyService.deleteCompany(companyidInactive, req.body, req.companyid )
-            res.json(company)
-        }catch(error){
-            console.log(error)
-            res.status(500).json({ error: "Erro ao deleter empresa" })
         }
     }
 }
