@@ -16,7 +16,7 @@ export const productController = {
 
             const product = await productService.getAllProducts(req.companyid)
             res.json(product)
-        }catch(error){
+        } catch (error){
             console.log(error)
         }
     },
@@ -24,6 +24,7 @@ export const productController = {
     async createProduct(req: auth, res: Response){
         try{
             const {description, barcode, inactiveflag} = req.body
+
             if(!req.companyid || !req.userid || !req.adminflag){
                 return res.status(401).json({ error: "Usuário não autenticado." })
             }
@@ -38,6 +39,7 @@ export const productController = {
                 inactiveflag,
                 companyid: req.companyid
             })
+
             res.status(201).json(product)
         }catch(error){
             console.log(error)

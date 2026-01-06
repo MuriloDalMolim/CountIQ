@@ -59,10 +59,10 @@ export const productService = {
         }
     },
 
-    async updateProduct(productIdUpdate: number, data: updateProductData, authUd: number){
+    async updateProduct(productIdUpdate: number, data: updateProductData, authId: number){
         const productToUpdate = await prisma.product.findFirst({
             where:{
-                companyid: authUd,
+                companyid: authId,
                 productid: productIdUpdate
             }
         })

@@ -74,12 +74,27 @@ export const userService ={
             throw new Error("Usuário não encontrado")
         }
 
+        const dataToUpdate: any = {};
+
+        if (data.email !== undefined) {
+            dataToUpdate.email = data.email;
+        }
+        if (data.name !== undefined) {
+            dataToUpdate.name = data.name;
+        }
+        if (data.inactiveflag !== undefined) {
+            dataToUpdate.inactiveflag = data.inactiveflag;
+        }
+        if (data.adminflag !== undefined) {
+            dataToUpdate.adminflag = data.adminflag;
+        }
+
         try{
             return await prisma.user.update({
                 where:{
                     userid: userIdUpdate
                 },
-                data: data,
+                data: dataToUpdate,
                 select: {
                     userid: true, 
                     email: true, 
