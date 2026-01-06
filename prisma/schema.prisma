@@ -38,10 +38,11 @@ model user {
 model product {
     productid       Int         @id @default(autoincrement())
     description     String
-    barcode         String         @unique
+    barcode         String      
     inactiveflag    String      @default("F") @db.Char(1)
     companyid       Int
     company         company     @relation(fields: [companyid], references: [companyid])
+    @@unique([companyid, barcode])
 }
 
 model list {
@@ -51,3 +52,4 @@ model list {
     inactiveflag    String      @default("F") @db.Char(1)
     company         company     @relation(fields: [companyid], references: [companyid])
 }
+
