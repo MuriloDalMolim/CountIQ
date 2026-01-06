@@ -21,6 +21,7 @@ model company {
 
     users user[]
     products product[]
+    lists list[]
 }
 
 model user {
@@ -40,5 +41,13 @@ model product {
     barcode         String         @unique
     inactiveflag    String      @default("F") @db.Char(1)
     companyid       Int
+    company         company     @relation(fields: [companyid], references: [companyid])
+}
+
+model list {
+    listid          Int         @id @default(autoincrement())
+    description     String
+    companyid       Int
+    inactiveflag    String      @default("F") @db.Char(1)
     company         company     @relation(fields: [companyid], references: [companyid])
 }
