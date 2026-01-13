@@ -43,6 +43,7 @@ model product {
     companyid       Int
     company         company     @relation(fields: [companyid], references: [companyid])
     @@unique([companyid, barcode])
+    product_list product_list[]
 }
 
 model list {
@@ -51,5 +52,13 @@ model list {
     companyid       Int
     inactiveflag    String      @default("F") @db.Char(1)
     company         company     @relation(fields: [companyid], references: [companyid])
+    product_list product_list[]
 }
 
+model product_list {
+    listid          Int    
+    productid       Int
+    list            list        @relation(fields: [listid], references: [listid])
+    product         product     @relation(fields: [productid], references: [productid])
+    @@id([listid,productid])
+}

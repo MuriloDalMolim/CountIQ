@@ -20,19 +20,24 @@ interface deleteProductData{
 export const productService = {
 
     async getAllProducts(authId: number){
-        return await prisma.product.findMany({
-            where:{
-                companyid: authId
-            },
-            select:{
-                productid: true,
-                description: true,
-                barcode: true,
-                companyid: true,
-                inactiveflag: true
-            }
+        try{
+            return await prisma.product.findMany({
+                where:{
+                    companyid: authId
+                },
+                select:{
+                    productid: true,
+                    description: true,
+                    barcode: true,
+                    companyid: true,
+                    inactiveflag: true
+                }
 
-        })
+            })
+        } catch (error){
+            console.log(error)
+            throw error
+        }
     },
 
     async createProduct(data: createProductData){
