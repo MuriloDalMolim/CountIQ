@@ -33,6 +33,8 @@ model user {
     adminflag       String      @default("F") @db.Char(1)
     companyid       Int
     company         company     @relation(fields: [companyid], references: [companyid])
+
+    list_count      list_count[]
 }
 
 model product {
@@ -42,8 +44,9 @@ model product {
     inactiveflag    String      @default("F") @db.Char(1)
     companyid       Int
     company         company     @relation(fields: [companyid], references: [companyid])
+
     @@unique([companyid, barcode])
-    product_list product_list[]
+    product_list    product_list[]
 }
 
 model list {
@@ -52,7 +55,9 @@ model list {
     companyid       Int
     inactiveflag    String      @default("F") @db.Char(1)
     company         company     @relation(fields: [companyid], references: [companyid])
-    product_list product_list[]
+
+    product_list    product_list[]
+    list_count      list_count[]
 }
 
 model product_list {
@@ -60,5 +65,15 @@ model product_list {
     productid       Int
     list            list        @relation(fields: [listid], references: [listid])
     product         product     @relation(fields: [productid], references: [productid])
+
     @@id([listid,productid])
+}
+
+model list_count {
+    listcountid     Int         @id @default(autoincrement())
+    status          String      @default("Aberta")
+    listid          Int
+    userid          Int
+    list            list        @relation(fields: [listid], references: [listid])
+    user            user        @relation(fields: [userid], references: [userid])
 }
