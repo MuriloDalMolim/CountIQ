@@ -62,6 +62,14 @@ export const listController = {
             res.status(200).json(list)
         } catch (error){
             console.log(error)
+
+            if (error instanceof Error) {
+                if (error.message === "Lista não encontrada") {
+                    return res.status(404).json({ error: error.message })
+                }
+            }
+            
+            res.status(500).json({ error: "Erro ao atualizar lista" })
         }
     }
 }

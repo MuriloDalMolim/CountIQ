@@ -14,7 +14,7 @@ import type { Request, Response } from "express";
             } catch (error){
                 if (error instanceof Error) {
                     if (error.message.includes("inválidos") || error.message.includes("inativa") || error.message.includes("inativo")) {
-                        return res.status(401).json({ error: error.message }); // 401 Unauthorized
+                        return res.status(401).json({ error: error.message }); 
                     }
                 }
 

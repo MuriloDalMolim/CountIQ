@@ -1,4 +1,5 @@
 import { prisma } from "../db.js";
+import { Prisma } from "@prisma/client";
 
 interface createProductData{
     description: string,
@@ -59,6 +60,11 @@ export const productService = {
             })
             return product
         } catch (error){
+            if (error instanceof Prisma.PrismaClientKnownRequestError) {
+                if (error.code === 'P2002') {
+                    throw new Error("Este código de barras já está em uso por outro produto.");
+                }
+            }
             console.log(error)
             throw error
         }
@@ -76,7 +82,7 @@ export const productService = {
             throw new Error("Produto não encontrado")
         }
 
-        const dataToUpdate: any = {};
+        const dataToUpdate: Prisma.productUpdateInput = {};
 
         if (data.description !== undefined) {
             dataToUpdate.description = data.description;
@@ -100,6 +106,11 @@ export const productService = {
                 }
             })
         }catch(error){
+            if (error instanceof Prisma.PrismaClientKnownRequestError) {
+                if (error.code === 'P2002') {
+                    throw new Error("Este código de barras já está em uso por outro produto.");
+                }
+            }
             console.log(error)
             throw error
         }

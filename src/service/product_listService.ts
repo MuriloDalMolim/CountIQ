@@ -1,26 +1,26 @@
 import { prisma } from "../db.js";
+import { Prisma } from "@prisma/client";
 
 export const productListService = {
 
     async getListProducts(listid: number, authId: number){
         try{
+            const listExists = await prisma.list.findFirst({
+                where:{ 
+                    listid: listid, 
+                    companyid: authId 
+                }
+            })
+            if(!listExists) {
+                throw new Error("Lista não encontrada");
+            }
+
             return await prisma.product_list.findMany({
                 where:{
-                    listid: listid,
-                    list:{
-                        companyid: authId
-                    }
+                    listid: listid
                 },
                 select:{
-                    product:{
-                        select:{
-                        productid: true,
-                        description: true,
-                        barcode: true,
-                        companyid: true,
-                        inactiveflag: true
-                        }
-                    }
+                    product: true
                 }
             })
         } catch (error){
@@ -36,7 +36,7 @@ export const productListService = {
                     listid: listid,
                     companyid: authId
                 }
-            });
+            })
 
             if (!listToFull) {
                 throw new Error("Lista não encontrada");
@@ -67,9 +67,10 @@ export const productListService = {
 
             return product_list
         } catch (error: any){
-
-            if (error.code === 'P2002') {
-                throw new Error("Este produto já foi adicionado a esta lista.");
+            if (error instanceof Prisma.PrismaClientKnownRequestError) {
+                if (error.code === 'P2002') {
+                    throw new Error("Este produto já foi adicionado a esta lista.");
+                }
             }
 
             console.log(error)

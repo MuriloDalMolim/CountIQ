@@ -1,5 +1,6 @@
 import { prisma } from "../db.js"
 import bcrypt from "bcryptjs"
+import { Prisma } from "@prisma/client";
 
 interface createUserData{
     email: string,
@@ -11,8 +12,9 @@ interface createUserData{
 
 interface updateUserData{
     email?: string,
-    name?: string
-    inactiveflag?: 'T' | 'F'
+    name?: string,
+    password?: string,
+    inactiveflag?: 'T' | 'F',
     adminflag?: 'T' | 'F'
 }
 
@@ -57,6 +59,11 @@ export const userService ={
             })
             return user
         } catch (error){
+            if (error instanceof Prisma.PrismaClientKnownRequestError) {
+                if (error.code === 'P2002') {
+                    throw new Error("Este email já está cadastrado no sistema.");
+                }
+            }
             console.log(error)
             throw error
         }
@@ -88,6 +95,9 @@ export const userService ={
         if (data.adminflag !== undefined) {
             dataToUpdate.adminflag = data.adminflag;
         }
+        if (data.password !== undefined && data.password.trim() !== "") {
+            dataToUpdate.password = await bcrypt.hash(data.password, 10);
+        }
 
         try{
             return await prisma.user.update({
@@ -105,6 +115,11 @@ export const userService ={
                 }
             })
         } catch (error){
+            if (error instanceof Prisma.PrismaClientKnownRequestError) {
+                if (error.code === 'P2002') {
+                    throw new Error("Este email já está em uso por outro usuário.");
+                }
+            }
             console.log(error)
             throw error
         }

@@ -41,8 +41,16 @@ export const productController = {
             })
 
             res.status(201).json(product)
-        }catch(error){
+        } catch(error){
             console.log(error)
+
+            if (error instanceof Error) {
+                if (error.message.includes("código de barras")) { 
+                    return res.status(409).json({ error: error.message })
+                }
+            }
+
+            res.status(500).json({ error: "Erro ao criar produto" })
         }
     },
 
@@ -63,6 +71,17 @@ export const productController = {
             res.status(200).json(product)
         }catch(error){
             console.log(error)
+
+            if (error instanceof Error) {
+                if (error.message === "Produto não encontrado") {
+                    return res.status(404).json({ error: error.message })
+                }
+                if (error.message.includes("código de barras")) {
+                    return res.status(409).json({ error: error.message })
+                }
+            }
+
+            res.status(500).json({ error: "Erro ao atualizar produto" })
         }
     },
 
@@ -87,6 +106,14 @@ export const productController = {
             res.status(200).json(product)
         }catch(error){
             console.log(error)
+
+            if (error instanceof Error) {
+                if (error.message === "Produto não encontrado") {
+                    return res.status(404).json({ error: error.message })
+                }
+            }
+
+            res.status(500).json({ error: "Erro ao alterar status do produto" })
         }
     }
 }

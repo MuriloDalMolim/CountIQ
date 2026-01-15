@@ -1,4 +1,5 @@
 import { prisma } from "../db.js";
+import { Prisma } from "@prisma/client";
 
 interface createListData {
     description: string,
@@ -8,7 +9,6 @@ interface createListData {
 
 interface updateListData {
     description?: string,
-    companyid?: number,
     inactiveflag?: 'T' | 'F'
 }
 
@@ -65,13 +65,16 @@ export const listService = {
         })
 
         if(!listToUpdate){
-            throw new Error("Listagem não encontrada")
+            throw new Error("Lista não encontrada")
         }
 
-        const dataToUpdate: any = {};
+        const dataToUpdate: Prisma.listUpdateInput = {};
 
         if (data.description !== undefined) {
             dataToUpdate.description = data.description;
+        }
+        if (data.inactiveflag !== undefined) {
+            dataToUpdate.inactiveflag = data.inactiveflag;
         }
 
         try{
@@ -79,8 +82,13 @@ export const listService = {
                 where:{
                     listid: listIdUpdate
                 },
-                data: dataToUpdate
-
+                data: dataToUpdate,
+                select:{
+                    listid: true,
+                    description: true,
+                    companyid: true,
+                    inactiveflag: true
+                }
             })
         } catch (error){
             console.log(error)

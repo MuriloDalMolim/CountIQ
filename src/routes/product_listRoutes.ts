@@ -1,6 +1,7 @@
 import express from "express";
-import { productListController } from "../controller/productListController.js";
 import { authMiddleware } from "../middleware/authMiddleware.js";
+import { productListController } from "../controller/product_listController.js";
+
  
 const router = express.Router()
 

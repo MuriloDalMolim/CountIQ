@@ -46,6 +46,13 @@ export const userController ={
             res.status(201).json(user);
         } catch (error){
             console.log(error)
+
+            if (error instanceof Error) {
+                if (error.message === "Este email já está cadastrado no sistema.") {
+                    return res.status(409).json({ error: error.message }) 
+                }
+            }
+
             res.status(500).json({ error: "Erro ao criar usuário" })
         }
     },
@@ -56,7 +63,7 @@ export const userController ={
             const userToUpdate = req.body
 
             if(!req.companyid || !req.userid || !req.adminflag){
-                return res.status(400).json({ error: "Usuário não autenticado"})
+                return res.status(401).json({ error: "Usuário não autenticado"})
             }
 
             if (req.adminflag !== 'T') {
@@ -71,6 +78,16 @@ export const userController ={
             res.status(200).json(user)
         } catch (error){
             console.log(error)
+
+            if (error instanceof Error) {
+                if (error.message === "Usuário não encontrado") {
+                    return res.status(404).json({ error: error.message })
+                }
+                if (error.message === "Este email já está em uso por outro usuário.") {
+                    return res.status(409).json({ error: error.message })
+                }
+            }
+
             res.status(500).json({ error: "Erro ao atualizar usuário" })
         }
     }
