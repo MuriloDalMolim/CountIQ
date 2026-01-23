@@ -45,11 +45,11 @@ export const productListController = {
             const {barcode} = req.body
 
             if(!req.companyid || !req.userid){
-                return res.status(401).json({ error: "Usuário não autenticado." })
+                return res.status(401).json({ error: "Usuário não autenticado."})
             }
 
             if(!barcode){
-                return res.status(400).json({ error: "Código de barras é obrigatório." })
+                return res.status(400).json({ error: "Código de barras é obrigatório."})
             }
 
             const productList = await productListService.insertIntoList(
@@ -63,16 +63,15 @@ export const productListController = {
             console.log(error)
 
             if (error instanceof Error) {
-                // Erros de Negócio
                 if (error.message === "Lista não encontrada" || error.message === "Produto não encontrado") {
                     return res.status(404).json({ error: error.message })
                 }
                 if (error.message === "Este produto já foi adicionado a esta lista.") {
-                    return res.status(409).json({ error: error.message }) // Conflict
+                    return res.status(409).json({ error: error.message })
                 }
             }
 
-            res.status(500).json({ error: "Erro ao adicionar produto na lista" })
+            res.status(500).json({ error: "Erro ao adicionar produto na lista "})
         }
     }
 }

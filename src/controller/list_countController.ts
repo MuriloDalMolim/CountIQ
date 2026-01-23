@@ -10,7 +10,7 @@ interface auth extends Request{
 export const listCountController = {
     async startCount(req: auth, res: Response){
         try{
-            if(!req.companyid || !req.userid || !req.adminflag){
+            if(!req.companyid || !req.userid){
                 return res.status(401).json({ error: "Usuário não autenticado." })
             }
 
@@ -39,7 +39,7 @@ export const listCountController = {
 
     async closeCount(req: auth, res: Response){
         try{
-            if(!req.companyid || !req.userid || !req.adminflag){
+            if(!req.companyid || !req.userid){
                 return res.status(401).json({ error: "Usuário não autenticado." })
             }
 

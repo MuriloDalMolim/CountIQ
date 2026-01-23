@@ -47,6 +47,7 @@ model product {
 
     @@unique([companyid, barcode])
     product_list    product_list[]
+    count_item      count_item[]
 }
 
 model list {
@@ -76,4 +77,17 @@ model list_count {
     userid          Int
     list            list        @relation(fields: [listid], references: [listid])
     user            user        @relation(fields: [userid], references: [userid])
+
+    count_item      count_item[]
+}
+
+model count_item{
+    quantity        Int         @default(0)
+    updateat        DateTime    @updatedAt 
+    listcountid     Int
+    productid       Int
+    list_count      list_count  @relation(fields: [listcountid], references: [listcountid])
+    product         product     @relation(fields: [productid], references: [productid])
+
+    @@unique([listcountid, productid])
 }

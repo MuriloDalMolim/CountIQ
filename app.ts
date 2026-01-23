@@ -6,6 +6,7 @@ import { productRoutes } from "./src/routes/productRoutes.js";
 import { listRoutes } from "./src/routes/listRoutes.js";
 import { productListRoutes } from "./src/routes/product_listRoutes.js";
 import { listCountRoutes } from "./src/routes/list_countRoutes.js";
+import { countItemRoutes } from "./src/routes/count_ItemRoutes.js";
 
 const app=express()
 app.use(express.json())
@@ -17,5 +18,6 @@ app.use("/auth", authRoutes)
 app.use("/list", listRoutes)
 app.use("/productlist", productListRoutes)
 app.use("/listcount", listCountRoutes)
+app.use("/countitem", countItemRoutes)
 
 export default app
