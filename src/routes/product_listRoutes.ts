@@ -7,5 +7,6 @@ const router = express.Router()
 
 router.get("/:listid", authMiddleware, productListController.getListProducts)
 router.post("/:listid", authMiddleware, productListController.insertIntoList)
+router.delete("/:listid", authMiddleware,  productListController.deleteFromList)
 
 export const productListRoutes = router

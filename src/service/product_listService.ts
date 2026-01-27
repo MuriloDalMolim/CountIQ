@@ -39,7 +39,7 @@ export const productListService = {
             })
 
             if (!listToFull) {
-                throw new Error("Lista não encontrada");
+                throw new Error("Lista não encontrada ou sem permissão");
             }
 
             const productToInsert = await prisma.product.findUnique({
@@ -73,6 +73,61 @@ export const productListService = {
                 }
             }
 
+            console.log(error)
+            throw error
+        }
+    },
+
+    async deleteFromList(listid: number, productid: number, forceDelete: boolean, authId: number){
+        try{
+
+            const listExists = await prisma.list.findFirst({
+                where: {
+                    listid: listid,
+                    companyid: authId
+                }
+            })
+            if (!listExists) {
+                throw new Error("Lista não encontrada ou sem permissão");
+            }
+
+            const productIsCounted = await prisma.count_item.findFirst({
+                where:{
+                    list_count:{
+                        listid:listid,
+                        status: "Encerrada"
+                    },
+                    productid: productid
+                }
+            })
+            if(productIsCounted && forceDelete == false){
+                return{
+                status: 'Ação não confirmada',
+                message:"Este produto já tem contagens encerradas para esta lista, deseja continuar?"
+                }
+            }
+
+            const count_item = await prisma.count_item.deleteMany({
+                where:{
+                    list_count:{
+                        listid:listid,
+                        status: "Aberta"
+                    },
+                    productid: productid,
+                }
+            })
+
+            const product_list = await prisma.product_list.delete({
+                where:{
+                    listid_productid:{
+                        listid: listid,
+                        productid: productid
+                    }
+                }
+            })
+
+            return product_list
+        } catch(error){
             console.log(error)
             throw error
         }

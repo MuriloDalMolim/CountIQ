@@ -73,5 +73,41 @@ export const productListController = {
 
             res.status(500).json({ error: "Erro ao adicionar produto na lista "})
         }
+    },
+
+    async deleteFromList(req: auth, res: Response){
+        try{
+            const listId = Number(req.params.listid)
+            const {productId, forceDelete} = req.body
+
+            if(!req.companyid || !req.userid){
+                return res.status(401).json({ error: "Usuário não autenticado."})
+            }
+            if(!productId){
+                return res.status(400).json({ error: "Nenhum produto foi selecionado para remover."})
+            }
+
+            const product_list = await productListService.deleteFromList(
+                listId,
+                productId,
+                forceDelete,
+                req.companyid
+            )
+
+            res.status(200).json(product_list)
+        } catch(error){
+            console.log(error)
+
+            if (error instanceof Error) {
+                if (error.message === "Este produto não esta inserido nesta lista.") {
+                    return res.status(409).json({ error: error.message })
+                }
+                if (error.message === "Lista não encontrada ou sem permissão.") {
+                    return res.status(409).json({ error: error.message })
+                }
+            }
+
+            res.status(500).json({ error: "Erro ao remover produto na lista "})
+        }
     }
 }
