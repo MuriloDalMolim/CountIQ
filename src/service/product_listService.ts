@@ -3,11 +3,11 @@ import { Prisma } from "@prisma/client";
 
 export const productListService = {
 
-    async getListProducts(listid: number, authId: number){
+    async getListProducts(listId: number, authId: number){
         try{
             const listExists = await prisma.list.findFirst({
                 where:{ 
-                    listid: listid, 
+                    listid: listId, 
                     companyid: authId 
                 }
             })
@@ -17,7 +17,7 @@ export const productListService = {
 
             return await prisma.product_list.findMany({
                 where:{
-                    listid: listid
+                    listid: listId
                 },
                 select:{
                     product: true
@@ -78,12 +78,12 @@ export const productListService = {
         }
     },
 
-    async deleteFromList(listid: number, productid: number, forceDelete: boolean, authId: number){
+    async deleteFromList(listId: number, productId: number, forceDelete: boolean, authId: number){
         try{
 
             const listExists = await prisma.list.findFirst({
                 where: {
-                    listid: listid,
+                    listid: listId,
                     companyid: authId
                 }
             })
@@ -94,10 +94,10 @@ export const productListService = {
             const productIsCounted = await prisma.count_item.findFirst({
                 where:{
                     list_count:{
-                        listid:listid,
+                        listid:listId,
                         status: "Encerrada"
                     },
-                    productid: productid
+                    productid: productId
                 }
             })
             if(productIsCounted && forceDelete == false){
@@ -107,21 +107,21 @@ export const productListService = {
                 }
             }
 
-            const count_item = await prisma.count_item.deleteMany({
+            await prisma.count_item.deleteMany({
                 where:{
                     list_count:{
-                        listid:listid,
+                        listid:listId,
                         status: "Aberta"
                     },
-                    productid: productid,
+                    productid: productId,
                 }
             })
 
             const product_list = await prisma.product_list.delete({
                 where:{
                     listid_productid:{
-                        listid: listid,
-                        productid: productid
+                        listid: listId,
+                        productid: productId
                     }
                 }
             })
