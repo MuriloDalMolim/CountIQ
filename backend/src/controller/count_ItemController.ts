@@ -56,10 +56,10 @@ export const countItemController = {
 
             if (error instanceof Error){
                 if (error.message === "Produto não localizado na contagem ou acesso negado.") {
-                    return res.status(409).json({ error: error.message })
+                    return res.status(404).json({ error: error.message })
                 }
                 if (error.message === "Contagem não localizada ou acesso negado.") {
-                    return res.status(409).json({ error: error.message })
+                    return res.status(404).json({ error: error.message })
                 }
             }
 
