@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import { companyRoutes } from "./src/routes/companyRoutes.js";
 import { userRoutes } from "./src/routes/userRoutes.js";
 import { authRoutes } from "./src/routes/authRoutes.js";
@@ -9,6 +10,7 @@ import { listCountRoutes } from "./src/routes/list_countRoutes.js";
 import { countItemRoutes } from "./src/routes/count_ItemRoutes.js";
 
 const app=express()
+app.use(cors());
 app.use(express.json())
  
 app.use("/company", companyRoutes)
