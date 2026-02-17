@@ -1,42 +1,51 @@
 import { countItemService } from "../service/count_ItemService.js";
 import type { Request, Response } from "express";
+import { AppError } from "../utilities/AppError.js";
 
 interface auth extends Request{
-    companyid?: number,
-    userid?: number,
-    adminflag?: 'T' | 'F'
+    companyId?: number,
+    userId?: number,
+    isAdmin?: boolean
 }
 
 export const countItemController = {
     async registerItemCount(req: auth, res: Response){
         try{
-            const listCountId = Number(req.params.listcountid)
+            const listCountId = Number(req.params.listCountId)
             const {productId, quantity, mode} = req.body 
 
-            if(!req.companyid || !req.userid){
+            if(!req.companyId || !req.userId){
                 return res.status(401).json({ error: "Usuário não autenticado." })
+            }
+
+            if(!productId || quantity === undefined || !mode){
+                return res.status(400).json({ error: "Dados incompletos. Verifique!" })
             }
 
             const countItem = await countItemService.registerItemCount(
                 listCountId,
                 productId,
                 quantity,
-                req.companyid,
+                req.companyId,
                 mode,
             )
 
             res.status(200).json(countItem)
         } catch(error){
+            if (error instanceof AppError) {
+                return res.status(error.statusCode).json({ error: error.message })
+            }
             console.log(error)
+            return res.status(500).json({ error: "Erro ao registrar item." })
         }
     },
 
     async deleteItemCount(req: auth, res: Response){
         try{
-            const listCountId = Number(req.params.listcountid)
+            const listCountId = Number(req.params.listCountId)
             const {productId} = req.body
 
-            if(!req.companyid || !req.userid){
+            if(!req.companyId || !req.userId){
                 return res.status(401).json({ error: "Usuário não autenticado." })
             }
 
@@ -47,23 +56,16 @@ export const countItemController = {
             const count_item = await countItemService.deleteItemCount(
                 listCountId,
                 productId,
-                req.companyid
+                req.companyId
             )
 
             res.status(200).json(count_item)
         } catch(error){
-            console.log(error)
-
-            if (error instanceof Error){
-                if (error.message === "Produto não localizado na contagem ou acesso negado.") {
-                    return res.status(404).json({ error: error.message })
-                }
-                if (error.message === "Contagem não localizada ou acesso negado.") {
-                    return res.status(404).json({ error: error.message })
-                }
+            if (error instanceof AppError) {
+                return res.status(error.statusCode).json({ error: error.message })
             }
-
-            res.status(500).json({ error: "Erro ao remover produto" })
+            console.log(error)
+            return res.status(500).json({ error: "Erro ao remover item." })
         }
     }
 }

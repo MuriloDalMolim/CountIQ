@@ -1,30 +1,62 @@
 import { prisma } from "../db.js";
 import { Prisma } from "@prisma/client";
+import { AppError } from "../utilities/AppError.js";
 
 interface createListData {
     description: string,
-    companyid: number,
-    inactiveflag: 'T' | 'F'
+    companyId: number,
+    isInactive: boolean
 }
 
 interface updateListData {
     description?: string,
-    inactiveflag?: 'T' | 'F'
+    isInactive?: boolean
 }
 
 export const listService = {
-    async getAllList(authId: number){
-        return await prisma.list.findMany({
-            where:{
-                companyid: authId
-            },
-            select:{
-                listid: true,
-                description: true,
-                companyid: true,
-                inactiveflag: true
+
+    async getListById(listIdGet:number, authId: number){
+        try{
+            const list = await prisma.list.findFirst({
+                where:{
+                    listId: listIdGet,
+                    companyId: authId 
+                },
+                select:{
+                    listId: true,
+                    description: true,
+                    companyId: true,
+                    isInactive: true
+                }
+            })
+            if(!list){
+                throw new AppError("Lista não encontrada.", 404)
             }
-        })
+
+            return list
+        }catch(error){
+            console.log(error)
+            throw error
+        }
+    },
+
+    async getAllList(authId: number){
+        try{
+            return await prisma.list.findMany({
+                where:{
+                    companyId: authId
+                },
+                select:{
+                    listId: true,
+                    description: true,
+                    companyId: true,
+                    isInactive: true
+                }
+            })
+        }catch(error){
+            console.log(error)
+            throw error
+        }
     },
 
     async createList(data: createListData){
@@ -32,14 +64,14 @@ export const listService = {
             const list = await prisma.list.create({
                 data:{
                     description: data.description,
-                    inactiveflag: data.inactiveflag,
-                    companyid: data.companyid
+                    isInactive: data.isInactive || false,
+                    companyId: data.companyId
                 },
                     select:{
-                    listid: true,
+                    listId: true,
                     description: true,
-                    companyid: true,
-                    inactiveflag: true
+                    companyId: true,
+                    isInactive: true
                 }   
             })
 
@@ -51,45 +83,40 @@ export const listService = {
     },
 
     async updateList(listIdUpdate: number,data: updateListData, authId: number){
-        const listToUpdate = await prisma.list.findFirst({
-            where:{
-                companyid: authId,
-                listid: listIdUpdate
-            },
-            select:{
-                listid: true,
-                description: true,
-                companyid: true,
-                inactiveflag: true
-            }
-        })
-
-        if(!listToUpdate){
-            throw new Error("Lista não encontrada")
-        }
-
-        const dataToUpdate: Prisma.listUpdateInput = {};
-
-        if (data.description !== undefined) {
-            dataToUpdate.description = data.description;
-        }
-        if (data.inactiveflag !== undefined) {
-            dataToUpdate.inactiveflag = data.inactiveflag;
-        }
-
         try{
-            return await prisma.list.update({
+            const listToUpdate = await prisma.list.findFirst({
                 where:{
-                    listid: listIdUpdate
+                    companyId: authId,
+                    listId: listIdUpdate
+                }
+            })
+            if(!listToUpdate){
+                throw new AppError("Lista não encontrada.", 404)
+            }
+
+            const dataToUpdate: Prisma.listUpdateInput = {}
+
+            if (data.description !== undefined) {
+                dataToUpdate.description = data.description
+            }
+            if (data.isInactive !== undefined) {
+                dataToUpdate.isInactive = data.isInactive
+            }
+
+            const list = await prisma.list.update({
+                where:{
+                    listId: listIdUpdate
                 },
                 data: dataToUpdate,
                 select:{
-                    listid: true,
+                    listId: true,
                     description: true,
-                    companyid: true,
-                    inactiveflag: true
+                    companyId: true,
+                    isInactive: true
                 }
             })
+
+            return list
         } catch (error){
             console.log(error)
             throw error

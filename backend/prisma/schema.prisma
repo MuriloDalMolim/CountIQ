@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -14,10 +8,10 @@ datasource db {
 }
 
 model company {
-    companyid       Int         @id @default(autoincrement())
+    companyId       Int         @id @default(autoincrement()) @map("companyid")
     name            String
-    cnpj            String      @unique
-    inactiveflag    String      @default("F")
+    cnpj            String      @unique @db.VarChar(14)
+    isInactive      Boolean     @default(false) @map("isinactive")
 
     users user[]
     products product[]
@@ -25,69 +19,69 @@ model company {
 }
 
 model user {
-    userid          Int         @id @default(autoincrement())
+    userId          Int         @id @default(autoincrement()) @map("userid")
     name            String
     email           String      @unique
     password        String
-    inactiveflag    String      @default("F") @db.Char(1)
-    adminflag       String      @default("F") @db.Char(1)
-    companyid       Int
-    company         company     @relation(fields: [companyid], references: [companyid])
+    isInactive      Boolean     @default(false) @map("isinactive")
+    isAdmin         Boolean     @default(false) @map("isadmin")
+    companyId       Int         @map("companyid")
+    company         company     @relation(fields: [companyId], references: [companyId])
 
     list_count      list_count[]
 }
 
 model product {
-    productid       Int         @id @default(autoincrement())
+    productId       Int         @id @default(autoincrement()) @map("productid")
     description     String
     barcode         String      
-    inactiveflag    String      @default("F") @db.Char(1)
-    companyid       Int
-    company         company     @relation(fields: [companyid], references: [companyid])
+    isInactive      Boolean     @default(false) @map("isinactive")
+    companyId       Int         @map("companyid")
+    company         company     @relation(fields: [companyId], references: [companyId])
 
-    @@unique([companyid, barcode])
+    @@unique([companyId, barcode])
     product_list    product_list[]
     count_item      count_item[]
 }
 
 model list {
-    listid          Int         @id @default(autoincrement())
+    listId          Int         @id @default(autoincrement()) @map("listid")
     description     String
-    companyid       Int
-    inactiveflag    String      @default("F") @db.Char(1)
-    company         company     @relation(fields: [companyid], references: [companyid])
+    companyId       Int         @map("companyid")
+    isInactive      Boolean     @default(false) @map("isinactive")
+    company         company     @relation(fields: [companyId], references: [companyId])
 
     product_list    product_list[]
     list_count      list_count[]
 }
 
 model product_list {
-    listid          Int    
-    productid       Int
-    list            list        @relation(fields: [listid], references: [listid])
-    product         product     @relation(fields: [productid], references: [productid])
+    listId          Int         @map("listid")
+    productId       Int         @map("productid")
+    list            list        @relation(fields: [listId], references: [listId])
+    product         product     @relation(fields: [productId], references: [productId])
 
-    @@id([listid,productid])
+    @@id([listId,productId])
 }
 
 model list_count {
-    listcountid     Int         @id @default(autoincrement())
+    listCountId     Int         @id @default(autoincrement()) @map("listcountid")
     status          String      @default("Aberta")
-    listid          Int
-    userid          Int
-    list            list        @relation(fields: [listid], references: [listid])
-    user            user        @relation(fields: [userid], references: [userid])
+    listId          Int         @map("listid")
+    userId          Int         @map("userid")
+    list            list        @relation(fields: [listId], references: [listId])
+    user            user        @relation(fields: [userId], references: [userId])
 
     count_item      count_item[]
 }
 
 model count_item{
     quantity        Int         @default(0)
-    updateat        DateTime    @updatedAt 
-    listcountid     Int
-    productid       Int
-    list_count      list_count  @relation(fields: [listcountid], references: [listcountid])
-    product         product     @relation(fields: [productid], references: [productid])
+    updateAt        DateTime    @updatedAt @map("updateat")
+    listCountId     Int         @map("listcountid")
+    productId       Int         @map("productid")
+    list_count      list_count  @relation(fields: [listCountId], references: [listCountId])
+    product         product     @relation(fields: [productId], references: [productId])
 
-    @@unique([listcountid, productid])
+    @@id([listCountId, productId])
 }

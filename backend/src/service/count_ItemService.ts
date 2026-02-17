@@ -1,45 +1,59 @@
 import { prisma } from "../db.js";
+import { AppError } from "../utilities/AppError.js";
 
 export const countItemService = {
-    async registerItemCount(listCountId: number, productId: number, quantity: number,  authId: number, mode: string){
+    async registerItemCount(listCountId: number, productId: number, quantity: number, authId: number, mode: string){
         try{
-
             const countExists = await prisma.list_count.findFirst({
                 where:{
-                    listcountid: listCountId,
+                    listCountId: listCountId,
                     list:{
-                        companyid: authId
+                        companyId: authId
                     }
                 }
             })
             if(!countExists){
-                throw new Error("Contagem não encontrada ou acesso negado.");
+                throw new AppError("Contagem não encontrada.", 404)
+            }
+            if(countExists.status !== "Aberta"){
+                throw new AppError("Esta contagem está encerrada e não aceita modificações.", 403)
+            }
+
+            const product = await prisma.product.findFirst({
+                where:{
+                    productId: productId,
+                    companyId: authId,
+                    isInactive: false
+                }
+            })
+            if(!product){
+                throw new AppError("Produto não encontrado ou inativo.", 400)
             }
 
             if(mode=='increment'){
-                
+
                 if(quantity<0){
                     const currentItem = await prisma.count_item.findUnique({
                         where:{
-                            listcountid_productid:{
-                                listcountid: listCountId,
-                                productid: productId
+                            listCountId_productId:{
+                                listCountId: listCountId,
+                                productId: productId
                             }
                         }
                     })
                     if(!currentItem){
-                         throw new Error("Item ainda não contado.");
+                         throw new AppError("Item ainda não contado, impossível subtrair.", 400)
                     }
                     if((currentItem?.quantity + quantity)<0){
-                        throw new Error("Não é possível reduzir o saldo de contagem do produto para um valor menor que 0.");
+                        throw new AppError("A quantidade não pode ficar negativa.", 400)
                     }
                 }
 
                 const item = await prisma.count_item.upsert({
                     where:{
-                        listcountid_productid:{
-                            listcountid: listCountId,
-                            productid: productId
+                        listCountId_productId:{
+                            listCountId: listCountId,
+                            productId: productId
                         }
                     },
                     update:{
@@ -48,38 +62,37 @@ export const countItemService = {
                         } 
                     },
                     create:{
-                        listcountid: listCountId,
-                        productid: productId,
+                        listCountId: listCountId,
+                        productId: productId,
                         quantity: quantity
                     }
                 })
                 return item
             }else if(mode=='set'){
-
                 if(quantity<0){
-                    throw new Error("Não é possível informar um número menor que 0");
+                    throw new AppError("A quantidade não pode ser negativa.", 400)
                 }
 
                 const item = await prisma.count_item.upsert({
                     where:{
-                        listcountid_productid:{
-                            listcountid: listCountId,
-                            productid: productId
+                        listCountId_productId:{
+                            listCountId: listCountId,
+                            productId: productId
                         }
                     },
                     update:{
                         quantity: quantity
                     },
                     create:{
-                        listcountid: listCountId,
-                        productid: productId,
+                        listCountId: listCountId,
+                        productId: productId,
                         quantity: quantity
                     }
 
                 })
                 return item
             }else{
-                throw new Error("Modo de operação inválido.");
+                throw new AppError("Modo de operação inválido (use 'increment' ou 'set').", 400)
             }
         } catch(error){
             console.log(error)
@@ -89,41 +102,41 @@ export const countItemService = {
 
     async deleteItemCount(listCountId: number, productId: number, authId: number){
         try{
-
-            const count = await prisma.count_item.findFirst({
+            const count = await prisma.list_count.findFirst({
                 where:{
-                    listcountid: listCountId,
-                    list_count:{ 
-                        list:{
-                            companyid: authId
-                        }
+                    listCountId: listCountId,
+                    list:{
+                        companyId: authId 
                     }
                 }
             })
             if(!count){
-                throw new Error("Contagem não localizada ou acesso negado.");
+                throw new AppError("Contagem não encontrada.", 404)
+            }
+            if(count.status !== "Aberta"){
+                throw new AppError("Contagem encerrada. Não é possível remover itens.", 403)
             }
 
             const itemTodelete = await prisma.count_item.findFirst({
                 where:{
-                    listcountid: listCountId,
-                    productid: productId,
+                    listCountId: listCountId,
+                    productId: productId,
                     list_count:{ 
                         list:{
-                            companyid: authId
+                            companyId: authId
                         }
                     }
                 }
             })
             if(!itemTodelete){
-                throw new Error("Produto não localizado na contagem ou acesso negado.");
+                throw new AppError("Produto não encontrado ou inativo.", 404)
             }
 
             const count_item = await prisma.count_item.delete({
                 where:{
-                    listcountid_productid:{
-                        listcountid: listCountId,
-                        productid: productId
+                    listCountId_productId:{
+                        listCountId: listCountId,
+                        productId: productId
                     },
                 }
             })

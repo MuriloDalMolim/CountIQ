@@ -1,62 +1,82 @@
 import { listCountService } from "../service/list_countService.js";
 import type { Request, Response } from "express";
+import { AppError } from "../utilities/AppError.js";
 
 interface auth extends Request{
-    companyid?: number,
-    userid?: number,
-    adminflag?: 'T' | 'F'
+    companyId?: number,
+    userId?: number,
+    isAdmin?: boolean
 }
 
 export const listCountController = {
     async startCount(req: auth, res: Response){
         try{
-            if(!req.companyid || !req.userid){
+            const listId = Number(req.params.listId)
+
+            if(!req.companyId || !req.userId){
                 return res.status(401).json({ error: "Usuário não autenticado." })
             }
 
-            const listId = Number(req.params.listid)
-
             const listCount = await listCountService.startCount(
                 listId,
-                req.companyid,
-                req.userid
+                req.companyId,
+                req.userId
             )
 
             res.status(201).json(listCount)
-        } catch (error){
+        }catch(error){
+            if (error instanceof AppError) {
+                return res.status(error.statusCode).json({ error: error.message })
+            }
             console.log(error)
-
-            if (error instanceof Error && error.message.includes("já possui uma contagem")) {
-                return res.status(409).json({ error: error.message })
-            }
-            if (error instanceof Error && error.message === "Lista não encontrada") {
-                return res.status(404).json({ error: error.message })
-            }
-
-            res.status(500).json({ error: "Erro ao iniciar contagem" })
+            return res.status(500).json({ error: "Erro ao iniciar contagem." })
         }
     },
 
     async closeCount(req: auth, res: Response){
         try{
-            if(!req.companyid || !req.userid){
+            const listCountId = Number(req.params.listCountId)
+
+            if(!req.companyId || !req.userId){
                 return res.status(401).json({ error: "Usuário não autenticado." })
             }
 
-            const listId = Number(req.params.listid)
-            const countId = Number(req.params.countid)
-
             const listCount = await listCountService.closeCount(
-                listId,
-                countId,
-                req.companyid,
-                req.userid
+                listCountId,
+                req.companyId,
+                req.userId
             )
 
-            res.status(201).json(listCount)
+            res.status(200).json(listCount)
         } catch(error){
+            if (error instanceof AppError) {
+                return res.status(error.statusCode).json({ error: error.message })
+            }
             console.log(error)
-            res.status(500).json({ error: "Erro ao encerrar contagem" })
-        } 
+            return res.status(500).json({ error: "Erro ao encerrar contagem." })
+        }
+    },
+
+    async deleteCount(req: auth, res: Response){
+        try{
+            const listCountId = Number(req.params.listCountId)
+
+            if(!req.companyId || !req.userId){
+                return res.status(401).json({ error: "Usuário não autenticado." })
+            }
+
+            const listCount = await listCountService.deleteCount(
+                listCountId,
+                req.companyId
+            )
+
+            return res.json(204).send(listCount)
+        }catch(error){
+            if(error instanceof AppError){
+                return res.status(error.statusCode).json({ error: error.message })
+            }
+            console.log(error)
+            return res.status(500).json({ error: "Erro ao excluir contagem." })
+        }
     }
 }

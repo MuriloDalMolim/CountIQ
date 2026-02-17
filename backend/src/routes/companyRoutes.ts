@@ -4,7 +4,8 @@ import { authMiddleware } from "../middleware/authMiddleware.js";
 
 const router = express.Router()
 
-router.put("/:companyid", authMiddleware, companyController.updateCompany)
+router.put("/:companyId", authMiddleware, companyController.updateCompany)
+router.get("/", authMiddleware, companyController.getCompany)
 
 export const companyRoutes = router
 

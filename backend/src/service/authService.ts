@@ -1,24 +1,26 @@
-import { prisma } from "../db.js"
+import { prisma } from "../db.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { AppError } from "../utilities/AppError.js";
 
-interface login{
-    email: string,
+interface loginData{
+    email: string
     password: string
 }
  
 interface SignUpData {
 
-  companyName: string;
-  companyCnpj: string;
+  companyName: string
+  companyCnpj: string
 
-  userName: string;
-  userEmail: string;
-  userPassword: string;
+  userName: string
+  userEmail: string
+  userPassword: string
 }
 
 export const authService = {
-    async login({email, password}: login){
+    async login({email, password}: loginData){
+
         const user = await prisma.user.findFirst({
             where:{
                 email: email,
@@ -27,56 +29,77 @@ export const authService = {
                 company: true
             }
         })
-
         if(!user){
-            throw new Error("Email ou senha inválidos")
+            throw new AppError("Email ou senha inválidos.", 401)
         }
 
-        if(user.inactiveflag !== "F"){
-            throw new Error("Este usuário está inativo")
+        if(user.isInactive){
+            throw new AppError("Este usuário está inativo.", 403)
         }
 
-        if (user.company.inactiveflag !== "F") {
-            throw new Error("A empresa desta conta está inativa");
+        if (user.company.isInactive === true) {
+            throw new AppError("A empresa desta conta está inativa.", 403)
         }
 
         const checkPassword = await bcrypt.compare(password, user.password)
             if (!checkPassword) {
-                throw new Error("Email ou senha inválidos");
+                throw new AppError("Email ou senha inválidos.", 401)
             }
 
         const secret = process.env.JWT_SECRET
         if(!secret){
-            throw new Error("Chave secreta não configurada")
+            throw new AppError("Erro interno de configuração.", 500)
         }
 
-        const tokenData ={
-            userid: user.userid,
-            companyid: user.companyid,
-            adminflag: user.adminflag
-        }
-
-        const token = jwt.sign(tokenData, secret,{
-            expiresIn: "1d"
-        })
+        const token = jwt.sign(
+            {
+                userId: user.userId,
+                companyId: user.companyId,
+                isAdmin: user.isAdmin
+            },
+            secret,
+            { expiresIn: "1d" }
+        )
 
         return {
             user: {
-                userid: user.userid,
+                userId: user.userId,
                 email: user.email,
                 name: user.name,
-                inactiveflag: user.inactiveflag,
-                adminflag: user.adminflag,
-                companyid: user.companyid
+                isInactive: user.isInactive,
+                isAdmin: user.isAdmin,
+                companyId: user.companyId
             },
             token: token
-        };
+        }
     },
 
     async signUp(data: SignUpData){
-        const hash = await bcrypt.hash(data.userPassword,10)
-
         try{
+            const hash = await bcrypt.hash(data.userPassword,10)
+
+            if(data.companyCnpj.length != 14){
+                throw new AppError("Verifique o CNPJ e tente novamente.", 400)
+            }
+
+            const emailExists = await prisma.user.findFirst({
+                where:{
+                    email: data.userEmail
+                }
+            })
+            if(emailExists){
+                throw new AppError("Email indisponível.", 409)
+            }
+
+            const companyExists = await prisma.company.findUnique({
+                where:{
+                    cnpj: data.companyCnpj
+                }
+            })
+            if(companyExists){
+                throw new AppError("CNPJ não disponível.", 409)
+            }
+
             const result = await prisma.$transaction(async(tx)=>{
 
                 const company = await tx.company.create({
@@ -89,16 +112,17 @@ export const authService = {
                     data: {
                         name: data.userName,
                         email: data.userEmail,
-                        adminflag: 'T',
                         password: hash,
-                        companyid: company.companyid,
+                        isAdmin: true,
+                        companyId: company.companyId,
                     },
                     select: { 
-                        userid: true,
-                        email: true,
+                        userId: true,
                         name: true,
-                        adminflag: true,
-                        companyid: true,
+                        email: true,
+                        isAdmin: true,
+                        isInactive: true,
+                        companyId: true,
                     }
                 })
                 return {company,user}
@@ -106,21 +130,24 @@ export const authService = {
 
             const secret = process.env.JWT_SECRET
             if(!secret){
-              throw new Error("Chave secreta não configurada")  
-            }
-            
-            const tokenData = {
-                userid: result.user.userid,
-                companyid: result.user.companyid,
-                adminflag: result.user.adminflag
+                throw new AppError("Erro interno de configuração.", 500)
             }
 
-            const token = jwt.sign(tokenData, secret, { expiresIn: "1d" });
-            return {
+            const token = jwt.sign(
+                {
+                    userId: result.user.userId,
+                    companyId: result.user.companyId,
+                    isAdmin: result.user.isAdmin
+                },
+                secret,
+                { expiresIn: "1d" }
+            )
+
+            return{
                 user: result.user,
                 company: result.company,
-                token: token
-            };
+                token
+            }
         } catch (error){
             throw error
         }

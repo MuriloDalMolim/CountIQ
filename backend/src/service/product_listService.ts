@@ -1,5 +1,6 @@
 import { prisma } from "../db.js";
 import { Prisma } from "@prisma/client";
+import { AppError } from "../utilities/AppError.js";
 
 export const productListService = {
 
@@ -7,17 +8,17 @@ export const productListService = {
         try{
             const listExists = await prisma.list.findFirst({
                 where:{ 
-                    listid: listId, 
-                    companyid: authId 
+                    listId: listId, 
+                    companyId: authId 
                 }
             })
             if(!listExists) {
-                throw new Error("Lista não encontrada");
+                throw new AppError("Lista não encontrada.", 404)
             }
 
             return await prisma.product_list.findMany({
                 where:{
-                    listid: listId
+                    listId: listId
                 },
                 select:{
                     product: true
@@ -29,36 +30,34 @@ export const productListService = {
         }
     },
 
-    async insertIntoList(listid: number, barcode: string, authId: number){
+    async insertIntoList(listId: number, barcode: string, authId: number){
         try{
             const listToFull = await prisma.list.findUnique({
                 where: {
-                    listid: listid,
-                    companyid: authId
+                    listId: listId,
+                    companyId: authId,
+                    isInactive: false
                 }
             })
-
-            if (!listToFull) {
-                throw new Error("Lista não encontrada ou sem permissão");
+            if(!listToFull){
+                throw new AppError("Lista não encontrada ou inativa.", 404)
             }
 
-            const productToInsert = await prisma.product.findUnique({
+            const productToInsert = await prisma.product.findFirst({
                 where:{
-                    companyid_barcode:{
-                        companyid: authId,
-                        barcode: barcode
-                    }
+                    companyId: authId,
+                    barcode: barcode,
+                    isInactive: false
                 }
             })
-
             if(!productToInsert){
-                throw new Error("Produto não encontrado")
+                throw new AppError("Produto não encontrado ou inativo.", 404)
             }
 
             const product_list = await prisma.product_list.create({
                 data:{
-                    listid: listid,
-                    productid: productToInsert.productid
+                    listId: listId,
+                    productId: productToInsert.productId
                 },
                 include:{
                     product: true
@@ -69,7 +68,7 @@ export const productListService = {
         } catch (error: any){
             if (error instanceof Prisma.PrismaClientKnownRequestError) {
                 if (error.code === 'P2002') {
-                    throw new Error("Este produto já foi adicionado a esta lista.");
+                    throw new AppError("Este produto já foi adicionado a esta lista.", 409)
                 }
             }
 
@@ -78,56 +77,66 @@ export const productListService = {
         }
     },
 
-    async deleteFromList(listId: number, productId: number, forceDelete: boolean, authId: number){
+    async deleteFromList(listId: number, productId: number, forceDelete: boolean, authId: number, isAdmin: boolean){
         try{
-
             const listExists = await prisma.list.findFirst({
                 where: {
-                    listid: listId,
-                    companyid: authId
+                    listId: listId,
+                    companyId: authId
                 }
             })
             if (!listExists) {
-                throw new Error("Lista não encontrada ou sem permissão");
+                throw new AppError("Lista não encontrada.", 404)
             }
 
             const productIsCounted = await prisma.count_item.findFirst({
                 where:{
                     list_count:{
-                        listid:listId,
+                        listId:listId,
                         status: "Encerrada"
                     },
-                    productid: productId
+                    productId: productId
                 }
             })
-            if(productIsCounted && forceDelete == false){
-                return{
-                status: 'Ação não confirmada',
-                message:"Este produto já tem contagens encerradas para esta lista, deseja continuar?"
+            if(productIsCounted){
+                if(!isAdmin){
+                    throw new AppError("Este produto possui contagens encerradas para esta lista. Solicite a exclusão para um ADMIN", 403)
+                }
+
+                if(!forceDelete){
+                    throw new AppError("Este produto possui contagens encerradas para esta lista. Confirme a exclusão para apagar todo o histórico.", 409)
+            
                 }
             }
 
-            await prisma.count_item.deleteMany({
-                where:{
-                    list_count:{
-                        listid:listId,
-                        status: "Aberta"
-                    },
-                    productid: productId,
-                }
-            })
+            return await prisma.$transaction(async (tx) => {
 
-            const product_list = await prisma.product_list.delete({
-                where:{
-                    listid_productid:{
-                        listid: listId,
-                        productid: productId
+                await tx.count_item.deleteMany({
+                    where:{
+                        productId: productId,
+                        list_count:{
+                            listId:listId
+                        },
                     }
-                }
-            })
+                })
 
-            return product_list
+                const product_list = await prisma.product_list.delete({
+                    where:{
+                        listId_productId:{
+                            listId: listId,
+                            productId: productId
+                        }
+                    }
+                })
+                return product_list
+            })
         } catch(error){
+            if (error instanceof Prisma.PrismaClientKnownRequestError) {
+                if (error.code === 'P2025') {
+                    throw new AppError("Produto não está nesta lista.", 404)
+                }
+            }
+
             console.log(error)
             throw error
         }

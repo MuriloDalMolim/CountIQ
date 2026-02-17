@@ -4,9 +4,9 @@ import jwt from "jsonwebtoken"
 declare global {
     namespace Express{
         interface Request{
-            userid?: number
-            companyid?: number
-            adminflag?: 'T' | 'F'
+            userId?: number
+            companyId?: number
+            isAdmin?: boolean
         }
     }
 }
@@ -35,9 +35,9 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction) 
         }
 
         const payload = jwt.verify(token, secret);
-        req.userid = (payload as jwt.JwtPayload).userid
-        req.companyid = (payload as jwt.JwtPayload).companyid
-        req.adminflag = (payload as jwt.JwtPayload).adminflag
+        req.userId = (payload as jwt.JwtPayload).userId
+        req.companyId = (payload as jwt.JwtPayload).companyId
+        req.isAdmin = (payload as jwt.JwtPayload).isAdmin
         next()
     }catch (error){
         if (error instanceof jwt.JsonWebTokenError) {

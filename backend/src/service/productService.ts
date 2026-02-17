@@ -1,37 +1,64 @@
 import { prisma } from "../db.js";
 import { Prisma } from "@prisma/client";
+import { AppError } from "../utilities/AppError.js";
 
 interface createProductData{
     description: string,
     barcode: string,
-    companyid: number,
-    inactiveflag?: 'T' | 'F'
+    companyId: number,
+    isInactive?: boolean
 }
 
 interface updateProductData{
     description?: string,
     barcode?: string,
-    companyid?: number
+    companyId?: number
 }
 
 interface deleteProductData{
-    inactiveflag: 'T' | 'F'
+    isInactive: boolean
 }
 
 export const productService = {
+
+    async getProductById(productIdGet: number, authId: number){
+        try{
+            const product = await prisma.product.findFirst({
+                where:{
+                    productId: productIdGet,
+                    companyId: authId
+                },
+                select: {
+                    productId: true,
+                    description: true,
+                    barcode: true,
+                    companyId: true,
+                    isInactive: true
+                }
+            })
+            if(!product){
+                throw new AppError("Produto não encontrado.", 404)
+            }
+
+            return product
+        }catch(error){
+            console.log(error)
+            throw error
+        }
+    },
 
     async getAllProducts(authId: number){
         try{
             return await prisma.product.findMany({
                 where:{
-                    companyid: authId
+                    companyId: authId
                 },
                 select:{
-                    productid: true,
+                    productId: true,
                     description: true,
                     barcode: true,
-                    companyid: true,
-                    inactiveflag: true
+                    companyId: true,
+                    isInactive: true
                 }
 
             })
@@ -43,26 +70,37 @@ export const productService = {
 
     async createProduct(data: createProductData){
         try{
+            const barcodeExists = await prisma.product.findFirst({
+                where: {
+                    barcode: data.barcode,
+                    companyId: data.companyId
+                }
+            })
+            if (barcodeExists) {
+                throw new AppError("Este código de barras já está em uso.", 409)
+            }
+
             const product = await prisma.product.create({
                 data:{
                     description: data.description,
                     barcode: data.barcode,
-                    companyid: data.companyid,
-                    inactiveflag: data.inactiveflag  || "F"
+                    companyId: data.companyId,
+                    isInactive: data.isInactive  || false
                 },
                 select:{
-                    productid: true,
+                    productId: true,
                     description: true,
                     barcode: true,
-                    inactiveflag: true,
-                    companyid: true
+                    isInactive: true,
+                    companyId: true
                 }
             })
+
             return product
         } catch (error){
             if (error instanceof Prisma.PrismaClientKnownRequestError) {
                 if (error.code === 'P2002') {
-                    throw new Error("Este código de barras já está em uso por outro produto.");
+                    throw new AppError("Este código de barras já está em uso por outro produto.", 409)
                 }
             }
             console.log(error)
@@ -71,44 +109,58 @@ export const productService = {
     },
 
     async updateProduct(productIdUpdate: number, data: updateProductData, authId: number){
-        const productToUpdate = await prisma.product.findFirst({
-            where:{
-                companyid: authId,
-                productid: productIdUpdate
-            }
-        })
-
-        if(!productToUpdate){
-            throw new Error("Produto não encontrado")
-        }
-
-        const dataToUpdate: Prisma.productUpdateInput = {};
-
-        if (data.description !== undefined) {
-            dataToUpdate.description = data.description;
-        }
-        if (data.barcode !== undefined) {
-            dataToUpdate.barcode = data.barcode;
-        }
-
         try{
+            const productToUpdate = await prisma.product.findFirst({
+                where:{
+                    companyId: authId,
+                    productId: productIdUpdate
+                }
+            })
+            if(!productToUpdate){
+                throw new AppError("Produto não encontrado.", 404)
+            }
+
+            if (data.barcode) {
+                const barcodeExists = await prisma.product.findFirst({
+                    where: {
+                        barcode: data.barcode,
+                        companyId: authId, 
+                        NOT: {
+                            productId: productIdUpdate 
+                        }
+                    }
+                })
+                if (barcodeExists) {
+                    throw new AppError("Código de barras já utilizado em outro produto.", 409)
+                }
+            }
+
+            const dataToUpdate: Prisma.productUpdateInput = {}
+
+            if (data.description !== undefined) {
+                dataToUpdate.description = data.description
+            }
+            if (data.barcode !== undefined) {
+                dataToUpdate.barcode = data.barcode
+            }
+
             return await prisma.product.update({
                 where:{
-                    productid: productIdUpdate,
+                    productId: productIdUpdate,
                 },
                 data:dataToUpdate,
                 select:{
-                    productid: true,
+                    productId: true,
                     description: true,
                     barcode: true,
-                    companyid: true,
-                    inactiveflag: true
+                    companyId: true,
+                    isInactive: true
                 }
             })
         }catch(error){
             if (error instanceof Prisma.PrismaClientKnownRequestError) {
                 if (error.code === 'P2002') {
-                    throw new Error("Este código de barras já está em uso por outro produto.");
+                    throw new AppError("Código de barras já utilizado em outro produto.", 409)
                 }
             }
             console.log(error)
@@ -117,31 +169,30 @@ export const productService = {
     },
 
     async deleteProduct(productIdDelete: number, data: deleteProductData ,authId: number, ){
-        const productToDelete = await prisma.product.findFirst({
-            where:{
-                productid: productIdDelete,
-                companyid: authId
-            }
-        })
-
-        if(!productToDelete){
-            throw new Error("Produto não encontrado")
-        }
-
         try{
+            const productToDelete = await prisma.product.findFirst({
+                where:{
+                    productId: productIdDelete,
+                    companyId: authId
+                }
+            })
+            if(!productToDelete){
+                throw new AppError("Produto não encontrado.", 404)
+            }
+
             return await prisma.product.update({
                 where:{
-                    productid: productIdDelete
+                    productId: productIdDelete
                 },
                 data:{
-                    inactiveflag: data.inactiveflag
+                    isInactive: data.isInactive
                 }, 
                 select:{
-                    productid: true,
+                    productId: true,
                     description: true,
                     barcode: true,
-                    companyid: true,
-                    inactiveflag: true
+                    companyId: true,
+                    isInactive: true
                 }
             })
         }catch(error){
