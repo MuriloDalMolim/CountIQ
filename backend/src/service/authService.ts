@@ -78,7 +78,9 @@ export const authService = {
         try{
             const hash = await bcrypt.hash(data.userPassword,10)
 
-            if(data.companyCnpj.length != 14){
+            const cleanCnpj = data.companyCnpj.replace(/\D/g, '')
+
+            if(cleanCnpj.length != 14){
                 throw new AppError("Verifique o CNPJ e tente novamente.", 400)
             }
 
@@ -93,7 +95,7 @@ export const authService = {
 
             const companyExists = await prisma.company.findUnique({
                 where:{
-                    cnpj: data.companyCnpj
+                    cnpj: cleanCnpj
                 }
             })
             if(companyExists){
@@ -105,7 +107,7 @@ export const authService = {
                 const company = await tx.company.create({
                     data: {
                         name: data.companyName,
-                        cnpj: data.companyCnpj
+                        cnpj: cleanCnpj
                     }
                 })
                 const user = await tx.user.create({
