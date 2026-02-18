@@ -12,7 +12,7 @@ function formatCNPJ(value: string) {
     .replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
     .replace(/\.(\d{3})(\d)/, '.$1/$2')
     .replace(/(\d{4})(\d)/, '$1-$2')
-    .substring(0, 18);
+    .substring(0, 18)
 }
 
 export function RegisterForm() {
@@ -23,42 +23,42 @@ export function RegisterForm() {
     const [companyName, setCompanyName] = useState("")
     const [companyCnpj, setCompanyCnpj] = useState("")
 
-    const [userName, setUserName] = useState("");
-    const [userEmail, setUserEmail] = useState("");
-    const [userPassword, setUserPassword] = useState("");
+    const [userName, setUserName] = useState("")
+    const [userEmail, setUserEmail] = useState("")
+    const [userPassword, setUserPassword] = useState("")
 
     const [isLoading, setIsLoading] = useState(false)
 
     async function handleRegister(e: React.FormEvent) {
         e.preventDefault()
 
-        const cleanCNPJ = companyCnpj.replace(/\D/g, '');
+        const cleanCNPJ = companyCnpj.replace(/\D/g, '')
         if (cleanCNPJ.length !== 14) {
-            alert("O CNPJ está incompleto.");
-            return; 
+            alert("O CNPJ está incompleto.")
+            return
         }
 
         try {
-        setIsLoading(true)
-        await signUp({
-            companyName,
-            companyCnpj,
-            userName,
-            userEmail,
-            userPassword,
-        });
-        navigate("/home")
+            setIsLoading(true)
+            await signUp({
+                companyName,
+                companyCnpj,
+                userName,
+                userEmail,
+                userPassword,
+            })
+            navigate("/home")
 
         } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
             if (error.response && error.response.data) {
                 alert(error.response.data.error)
             } else {
-                alert("Erro ao criar conta. Tente novamente.");
+                alert("Erro ao criar conta. Tente novamente.")
             }
-            console.log(error);
+            console.log(error)
 
         } finally {
-            setIsLoading(false);
+            setIsLoading(false)
         }
     }
 

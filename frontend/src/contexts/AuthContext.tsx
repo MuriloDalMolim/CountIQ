@@ -19,10 +19,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const storagedUser = localStorage.getItem('@CountIQ:user')
 
         if (storagedToken && storagedUser) {
-            api.defaults.headers.common['Authorization'] = `Bearer ${storagedToken}`;
-        return JSON.parse(storagedUser)
+            api.defaults.headers.common['Authorization'] = `Bearer ${storagedToken}`
+            return JSON.parse(storagedUser)
         }
-
         return null
     })
 
@@ -36,7 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         api.defaults.headers.common['Authorization'] = `Bearer ${token}`
 
         setUser(user)
-    }, []);
+    }, [])
 
     const signUp = useCallback(async (data: SignUpData) => {
         const response = await signUpRequest(data)
@@ -48,7 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         api.defaults.headers.common['Authorization'] = `Bearer ${token}`
 
         setUser(user)
-    }, []);
+    }, [])
 
     const signOut = useCallback(() => {
         localStorage.removeItem('@CountIQ:token')
@@ -61,12 +60,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     return (
         <AuthContext.Provider value={{ user, isAuthenticated: !!user, signIn, signUp, signOut }}>
-        {children}
+            {children}
         </AuthContext.Provider>
     )
 }
 
 export function useAuth() {
-    const context = useContext(AuthContext);
-    return context;
+    const context = useContext(AuthContext)
+    return context
 }

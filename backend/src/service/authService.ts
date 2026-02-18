@@ -68,7 +68,11 @@ export const authService = {
                 name: user.name,
                 isInactive: user.isInactive,
                 isAdmin: user.isAdmin,
-                companyId: user.companyId
+                companyId: user.companyId,
+                company:{
+                    name: user.company.name,
+                    cnpj: user.company.cnpj
+                }
             },
             token: token
         }

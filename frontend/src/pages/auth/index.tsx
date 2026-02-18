@@ -4,7 +4,7 @@ import { LoginForm } from '../../features/auth/components/LoginForm';
 import { RegisterForm } from '../../features/auth/components/RegisterForm';
 
 export function Auth() {
-    const [authMode, setAuthMode] = useState<'login' | 'cadastro'>('login');
+    const [authMode, setAuthMode] = useState<'login' | 'cadastro'>('login')
 
     return (
         <div className="min-h-screen w-full flex flex-col items-center justify-center bg-brand-50 py-10 px-4">
@@ -18,7 +18,6 @@ export function Auth() {
             </header>
 
             <main className="w-full max-w-[450px] rounded-2xl bg-white p-8 shadow-xl shadow-gray-200/50 border border-gray-100">
-                
                 <div className="mb-8 flex rounded-xl bg-brand-50 p-1.5">
                     <button
                         onClick={() => setAuthMode('login')}
@@ -54,8 +53,7 @@ export function Auth() {
                 </div>
 
                 {authMode === 'login' ? <LoginForm /> : <RegisterForm />}
-
             </main>
         </div>
-    );
+    )
 }

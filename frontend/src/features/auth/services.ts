@@ -1,30 +1,34 @@
 import api from "../../services/api"; 
 
 export interface User {
-    userid: number;      
-    name: string;
-    email: string;
-    companyid: number;   
-    adminflag: string;   
-    inactiveflag?: string;
+    userId: number
+    name: string
+    email: string
+    companyId: number
+    isAdmin: string
+    isInactive: string
+    company:{
+        name: string
+        cnpj: string
+    }
 }
 
 export interface SignInData {
-    email: string;
-    password: string;
+    email: string
+    password: string
 }
 
 export interface SignUpData {
-    companyName: string;
-    companyCnpj: string;
-    userName: string;
-    userEmail: string;
-    userPassword: string;
+    companyName: string
+    companyCnpj: string
+    userName: string
+    userEmail: string
+    userPassword: string
 }
 
 interface AuthResponse {
-    token: string;
-    user: User;
+    token: string
+    user: User
 }
 
 export async function loginRequest(data: SignInData): Promise<AuthResponse>{

@@ -29,7 +29,7 @@ export function LoginForm() {
             console.log(error)
 
         } finally {
-            setIsLoading(false);
+            setIsLoading(false)
         }
     }
 
@@ -47,24 +47,24 @@ export function LoginForm() {
         
         <div className="space-y-1">
             <Input 
-            label="Senha" 
-            type="password" 
-            placeholder="••••••••"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            autoComplete="current-password"
+                label="Senha" 
+                type="password" 
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                autoComplete="current-password"
             />
             <div className="flex justify-end pt-1">
-            <a href="#" className="text-xs font-medium text-brand-500 hover:underline">
-                Esqueci minha senha
-            </a>
+                <a href="#" className="text-xs font-medium text-brand-500 hover:underline">
+                    Esqueci minha senha
+                </a>
             </div>
         </div>
 
         <Button type="submit" className="w-full mt-4" disabled={isLoading}>
             {isLoading ? 'Entrando...' : 'Entrar'}
         </Button>
-        </form>
+    </form>
     )
 }
