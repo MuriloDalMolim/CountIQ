@@ -1,17 +1,14 @@
-import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { Auth } from '../pages/auth/index';
-import { Home } from '../pages/home';
-import { Users } from "../pages/Users";
+import { BrowserRouter, Routes, Route, Navigate} from 'react-router-dom';
+import { Auth } from '../pages/auth/Auth.tsx';
+import { Home } from '../pages/home/Home.tsx';
+import { Users } from '../pages/Users/Users';
 import { Products } from "../pages/Products";
 import { Lists } from "../pages/Lists";
 import { Counts } from "../pages/Counts";
 import { Company } from "../pages/Company";
+import { Layout } from '../components/Layout';
 
-function PrivateRoutes() {
-    const { isAuthenticated } = useAuth(); 
-    return isAuthenticated ? <Outlet /> : <Navigate to="/" />
-}
+
 
 export function AppRoutes() {
     return (
@@ -19,7 +16,7 @@ export function AppRoutes() {
             <Routes>
                 <Route path="/" element={<Auth />} />
 
-                <Route element={<PrivateRoutes />}>
+                <Route element={<Layout/>}>
                     <Route path="/home" element={<Home />} />
                     <Route path="/users" element={<Users />} />
                     <Route path="/products" element={<Products />} />

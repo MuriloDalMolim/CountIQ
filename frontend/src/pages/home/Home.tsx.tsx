@@ -1,7 +1,6 @@
 import { Users, Package, ClipboardList, Calculator, Building2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
-import { Header } from "../../components/Header"; 
 import { ModuleCard } from "../../components/ModuleCard";
 
 export function Home() {
@@ -44,25 +43,24 @@ export function Home() {
     ]
 
     return (
-        <div className="min-h-screen bg-[#F8F9FA]">
-            <Header />
+        <main className="max-w-7xl mx-auto px-8 py-12">
+            <div className="mb-10">
+                <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                    Bem-vindo, {user?.name?.split(" ")[0] || "Admin"}!
+                </h2>
+                <p className="text-gray-500 font-medium">
+                    Selecione um módulo para começar a gerenciar seu estoque.
+                </p>
+            </div>
 
-            <main className="max-w-7xl mx-auto px-8 py-12">
-                <div className="mb-10">
-                    <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                        Bem-vindo, {user?.name?.split(" ")[0] || "Admin"}!
-                    </h2>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {modules.map((module, index) => (
-                        <ModuleCard 
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {modules.map((module, index) => (
+                    <ModuleCard 
                         key={index} 
                         {...module} 
-                        />
-                    ))}
-                </div>
-            </main>
-        </div>
+                    />
+                ))}
+            </div>
+        </main>
     )
 }
