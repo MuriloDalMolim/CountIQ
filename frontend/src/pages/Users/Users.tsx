@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Users as UsersIcon, Plus, ChevronLeft } from "lucide-react";
+import { Users as UsersIcon, Plus, ChevronLeft, Filter } from "lucide-react";
 
 import api from "../../services/api";
 import { Button } from "../../components/ui/Button";
@@ -10,6 +10,8 @@ import { SearchBar } from "../../components/SearchBar";
 import { UserTable, type User } from "./UserTable";
 import { UserModal } from "./UserModal";
 
+type FilterStatus = 'all' | 'active' | 'inactive'
+
 export function Users() {
     const navigate = useNavigate()
     const [users, setUsers] = useState<User[]>([])
@@ -17,6 +19,7 @@ export function Users() {
     const [loading, setLoading] = useState(true)
     const [search, setSearch] = useState("")
     const [selectedUser, setSelectedUser] = useState<User | null>(null)
+    const [filterStatus, setFilterStatus] = useState<FilterStatus>('all')
 
     async function loadUsers() {
         try {
@@ -44,10 +47,18 @@ export function Users() {
         setSelectedUser(null)
     }
 
-    const filteredUsers = users.filter(user => 
-        user.name.toLowerCase().includes(search.toLowerCase()) ||
-        user.email.toLowerCase().includes(search.toLowerCase())
-    )
+    const filteredUsers = users.filter(user => {
+        const matchesSearch =
+            user.name.toLowerCase().includes(search.toLowerCase()) ||
+            user.email.toLowerCase().includes(search.toLowerCase())
+
+        const matchesStatus =
+            filterStatus === 'all' ? true :
+            filterStatus === 'active' ? !user.isInactive :
+            user.isInactive; 
+
+        return matchesSearch && matchesStatus;
+    })
 
     return (
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-8">
@@ -72,11 +83,49 @@ export function Users() {
                 }
             />
 
-            <SearchBar 
-                value={search} 
-                onChange={setSearch} 
-                placeholder="Buscar por nome ou email..." 
-            />
+            <div className="flex flex-col md:flex-row gap-4 mb-6">
+                <div className="flex-1">
+                    <SearchBar 
+                        value={search} 
+                        onChange={setSearch} 
+                        placeholder="Buscar por nome ou email..." 
+                    />
+                </div>
+
+                <div className="bg-white p-1 rounded-xl border border-gray-200 shadow-sm flex items-center h-[66px] px-4 gap-2">
+                    <Filter className="w-4 h-4 text-gray-400 mr-2" />
+                    <button
+                    onClick={() => setFilterStatus('all')}
+                    className={`px-4 py-2 text-sm font-bold rounded-lg transition-all ${
+                        filterStatus === 'all' 
+                        ? 'bg-blue-50 text-blue-600' 
+                        : 'text-gray-500 hover:bg-gray-50'
+                    }`}
+                    >
+                        Todos
+                    </button>
+                    <button
+                    onClick={() => setFilterStatus('active')}
+                    className={`px-4 py-2 text-sm font-bold rounded-lg transition-all ${
+                        filterStatus === 'active' 
+                        ? 'bg-green-50 text-green-600' 
+                        : 'text-gray-500 hover:bg-gray-50'
+                    }`}
+                    >
+                        Ativos
+                    </button>
+                    <button
+                        onClick={() => setFilterStatus('inactive')}
+                        className={`px-4 py-2 text-sm font-bold rounded-lg transition-all ${
+                            filterStatus === 'inactive' 
+                            ? 'bg-red-50 text-red-600' 
+                            : 'text-gray-500 hover:bg-gray-50'
+                        }`}
+                    >
+                        Inativos
+                    </button>
+                </div>
+            </div>    
 
             {loading ? (
                 <div className="text-center py-20 text-gray-400">Carregando lista...</div>
