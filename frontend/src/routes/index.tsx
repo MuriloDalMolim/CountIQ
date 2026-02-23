@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate} from 'react-router-dom';
 import { Auth } from '../pages/auth/Auth.tsx';
 import { Home } from '../pages/home/Home.tsx';
 import { Users } from '../pages/Users/Users';
-import { Products } from "../pages/Products";
+import { Products } from "../pages/Products/Products.tsx";
 import { Lists } from "../pages/Lists";
 import { Counts } from "../pages/Counts";
 import { Company } from "../pages/Company";
