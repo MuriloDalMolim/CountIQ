@@ -47,11 +47,12 @@ export const productService = {
         }
     },
 
-    async getAllProducts(authId: number){
+    async getAllProducts(authId: number, isInactive?: boolean){
         try{
             return await prisma.product.findMany({
                 where:{
-                    companyId: authId
+                    companyId: authId,
+                    ...(isInactive !== undefined && { isInactive })                
                 },
                 select:{
                     productId: true,

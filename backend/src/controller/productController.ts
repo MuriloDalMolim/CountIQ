@@ -34,11 +34,19 @@ export const productController = {
     
     async getAllProducts(req: auth,res: Response ){
         try{
+            const {isInactive} = req.query 
+            const isInactiveBool = isInactive !== undefined 
+                ? isInactive === 'true' 
+                : undefined
+
             if(!req.companyId || !req.userId){
                 return res.status(401).json({ error: "Usuário não autenticado." })
             }
 
-            const product = await productService.getAllProducts(req.companyId)
+            const product = await productService.getAllProducts(
+                req.companyId,
+                isInactiveBool
+            )
 
             res.json(product)
         } catch (error){
