@@ -1,8 +1,10 @@
 import api from "../../services/api";
-import { type Product } from "../../pages/Products/ProductTable";
 
 export const productsService = {
-    list: () => api.get<Product[]>("/product"),
+
+    list: (isInactive?: boolean) => 
+        api.get("/product", { params: { isInactive } }),
+
     
     create: (data: { description: string; barcode: string; isInactive?: boolean }) => 
         api.post("/product", data),
