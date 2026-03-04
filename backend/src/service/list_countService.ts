@@ -2,6 +2,65 @@ import { prisma } from "../db.js";
 import { AppError } from "../utilities/AppError.js";
 
 export const listCountService = {
+    async getCountById (listCountId: number, authId: number){
+        try{
+            const listCount = await prisma.list_count.findFirst({
+                where:{
+                    listCountId,
+                    list:{
+                        companyId: authId
+                    }
+                },
+                include:{
+                    count_item: true,
+                    list:{
+                        include:{
+                            product_list:{
+                                include:{
+                                    product: true
+                                }
+                            }
+                        }
+                    }
+                }
+            })
+
+            return listCount
+        } catch(error){
+            console.log(error)
+            throw error
+        }
+    },
+
+    async getAllCounts (authId: number){
+        try{
+            const listCount = await prisma.list_count.findMany({
+                where:{
+                    list:{
+                        companyId: authId
+                    }
+                },
+                include:{
+                    list:{
+                        select:{
+                            description: true
+                        }
+                    },
+                    user: {
+                        select: {
+                            name: true 
+                        }
+                    },
+                }
+            })
+
+        return listCount
+        } catch(error) {
+            console.log(error)
+            throw error
+        }
+    },
+
     async startCount (listId: number, authId: number, authUserId: number){
         try{
             const listToCount = await prisma.list.findFirst({

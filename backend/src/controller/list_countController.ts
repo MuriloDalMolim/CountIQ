@@ -9,6 +9,53 @@ interface auth extends Request{
 }
 
 export const listCountController = {
+    async getCountById(req: auth, res: Response){
+        try{
+            const listCountId = Number(req.params.listCountId)
+
+            if(!req.companyId || !req.userId){
+                return res.status(401).json({ error: "Usuário não autenticado." })
+            }
+
+            const listCount = await listCountService.getCountById(
+                listCountId,
+                req.companyId
+            )
+
+            if (!listCount) {
+                return res.status(404).json({ error: "Sessão de contagem não encontrada." })
+            }
+
+            res.status(200).json(listCount)
+        } catch(error){
+            if (error instanceof AppError) {
+                return res.status(error.statusCode).json({ error: error.message })
+            }
+            console.log(error)
+            return res.status(500).json({ error: "Erro ao listar contagens." })
+        }
+    },
+
+    async getAllCounts(req: auth, res: Response){
+        try{
+            if(!req.companyId || !req.userId){
+                return res.status(401).json({ error: "Usuário não autenticado." })
+            }
+
+            const listCount = await listCountService.getAllCounts(
+                req.companyId
+            )
+
+            res.status(200).json(listCount)
+        } catch(error){
+            if (error instanceof AppError) {
+                return res.status(error.statusCode).json({ error: error.message })
+            }
+            console.log(error)
+            return res.status(500).json({ error: "Erro ao listar contagens." })
+        }
+    },
+
     async startCount(req: auth, res: Response){
         try{
             const listId = Number(req.params.listId)

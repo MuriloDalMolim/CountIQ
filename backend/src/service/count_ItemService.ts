@@ -129,7 +129,7 @@ export const countItemService = {
                 }
             })
             if(!itemTodelete){
-                throw new AppError("Produto não encontrado ou inativo.", 404)
+                throw new AppError("Produto ainda não contado ou inexistente.", 404)
             }
 
             const count_item = await prisma.count_item.delete({
