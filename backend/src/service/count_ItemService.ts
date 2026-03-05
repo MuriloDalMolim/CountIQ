@@ -30,6 +30,8 @@ export const countItemService = {
                 throw new AppError("Produto não encontrado ou inativo.", 400)
             }
 
+            let item
+
             if(mode=='increment'){
 
                 if(quantity<0){
@@ -49,7 +51,7 @@ export const countItemService = {
                     }
                 }
 
-                const item = await prisma.count_item.upsert({
+                item = await prisma.count_item.upsert({
                     where:{
                         listCountId_productId:{
                             listCountId: listCountId,
@@ -67,13 +69,13 @@ export const countItemService = {
                         quantity: quantity
                     }
                 })
-                return item
+
             }else if(mode=='set'){
                 if(quantity<0){
                     throw new AppError("A quantidade não pode ser negativa.", 400)
                 }
 
-                const item = await prisma.count_item.upsert({
+                item = await prisma.count_item.upsert({
                     where:{
                         listCountId_productId:{
                             listCountId: listCountId,
@@ -90,10 +92,21 @@ export const countItemService = {
                     }
 
                 })
-                return item
+
             }else{
                 throw new AppError("Modo de operação inválido (use 'increment' ou 'set').", 400)
             }
+
+            await prisma.list_count.update({
+                where:{ 
+                    listCountId: listCountId 
+                },
+                data:{ 
+                    updateAt: new Date() 
+                } 
+            })
+
+            return item
         } catch(error){
             console.log(error)
             throw error
@@ -138,6 +151,15 @@ export const countItemService = {
                         listCountId: listCountId,
                         productId: productId
                     },
+                }
+            })
+
+            await prisma.list_count.update({
+                where:{ 
+                    listCountId: listCountId 
+                },
+                data:{ 
+                    updateAt: new Date() 
                 }
             })
 

@@ -67,6 +67,7 @@ model product_list {
 model list_count {
     listCountId     Int         @id @default(autoincrement()) @map("listcountid")
     status          String      @default("Aberta")
+    updateAt        DateTime    @updatedAt @map("updateat")
     listId          Int         @map("listid")
     userId          Int         @map("userid")
     list            list        @relation(fields: [listId], references: [listId])
