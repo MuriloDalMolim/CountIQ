@@ -4,9 +4,11 @@ import { Home } from '../pages/home/Home.tsx';
 import { Users } from '../pages/Users/Users';
 import { Products } from "../pages/Products/Products.tsx";
 import { Lists } from "../pages/Lists/Lists.tsx";
-import { Counts } from "../pages/Counts";
+import { Counts } from "../pages/Counts/Counts.tsx";
 import { Company } from "../pages/Company";
 import { Layout } from '../components/Layout';
+import { Counting } from '../pages/Counts/Counting.tsx';
+import { CountView } from '../pages/Counts/CountView.tsx';
 
 
 
@@ -22,6 +24,8 @@ export function AppRoutes() {
                     <Route path="/products" element={<Products />} />
                     <Route path="/lists" element={<Lists />} />
                     <Route path="/counts" element={<Counts />} />
+                    <Route path="/counts/view/:listId" element={<CountView />} />
+                    <Route path="/counting/:listId" element={<Counting />} />
                     <Route path="/company" element={<Company />} />
                 </Route>
                 <Route path="*" element={<Navigate to="/" />} />
