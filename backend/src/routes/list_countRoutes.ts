@@ -4,7 +4,7 @@ import { listCountController } from "../controller/list_countController.js";
 
 const router = express.Router()
 
-router.get("/listCountId", authMiddleware, listCountController.getCountById)
+router.get("/:listCountId", authMiddleware, listCountController.getCountById)
 router.get("/", authMiddleware, listCountController.getAllCounts)
 router.post("/:listId", authMiddleware, listCountController.startCount)
 router.patch("/:listCountId/close", authMiddleware, listCountController.closeCount)
