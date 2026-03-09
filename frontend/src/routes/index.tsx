@@ -5,7 +5,7 @@ import { Users } from '../pages/Users/Users';
 import { Products } from "../pages/Products/Products.tsx";
 import { Lists } from "../pages/Lists/Lists.tsx";
 import { Counts } from "../pages/Counts/Counts.tsx";
-import { Company } from "../pages/Company";
+import { Company } from "../pages/Company/Company.tsx";
 import { Layout } from '../components/Layout';
 import { Counting } from '../pages/Counts/Counting.tsx';
 import { CountView } from '../pages/Counts/CountView.tsx';
