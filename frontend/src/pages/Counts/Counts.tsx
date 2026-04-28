@@ -145,7 +145,7 @@ export function Counts() {
                 className="flex items-center gap-2 text-gray-500 hover:text-brand-600 mb-6 font-medium group transition-colors"
             >
                 <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-                <span className="text-sm">Voltar ao Dashboard</span>
+                <span className="text-base">Voltar ao Dashboard</span>
             </button>
 
             <PageHeader

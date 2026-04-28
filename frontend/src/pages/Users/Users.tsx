@@ -1,82 +1,106 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Users as UsersIcon, Plus, ChevronLeft, Filter } from "lucide-react";
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+    Users as UsersIcon,
+    Plus,
+    ChevronLeft,
+    Filter,
+    Loader2,
+} from 'lucide-react';
 
-import api from "../../services/api";
-import { Button } from "../../components/ui/Button";
-import { PageHeader } from "../../components/PageHeader";
-import { SearchBar } from "../../components/SearchBar";
+import api from '../../services/api';
+import { Button } from '../../components/ui/Button';
+import { PageHeader } from '../../components/PageHeader';
+import { SearchBar } from '../../components/SearchBar';
 
-import { UserTable, type User } from "./UserTable";
-import { UserModal } from "./UserModal";
+import { UserTable, type User } from './UserTable';
+import { UserModal } from './UserModal';
 
-type FilterStatus = 'all' | 'active' | 'inactive'
+type FilterStatus = 'all' | 'active' | 'inactive';
 
 export function Users() {
-    const navigate = useNavigate()
-    const [users, setUsers] = useState<User[]>([])
-    const [isModalOpen, setIsModalOpen] = useState(false)
-    const [loading, setLoading] = useState(true)
-    const [search, setSearch] = useState("")
-    const [selectedUser, setSelectedUser] = useState<User | null>(null)
-    const [filterStatus, setFilterStatus] = useState<FilterStatus>('all')
+    const navigate = useNavigate();
+    const [users, setUsers] = useState<User[]>([]);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [search, setSearch] = useState('');
+    const [selectedUser, setSelectedUser] = useState<User | null>(null);
+    const [filterStatus, setFilterStatus] = useState<FilterStatus>('all');
 
     async function loadUsers() {
         try {
-            setLoading(true)
-            const response = await api.get("/users")
-            setUsers(response.data)
+            setLoading(true);
+            const response = await api.get('/users');
+            setUsers(response.data);
         } catch (error) {
-            console.error("Erro ao carregar usuários:", error)
+            console.error('Erro ao carregar usuários:', error);
         } finally {
-            setLoading(false)
+            setLoading(false);
         }
     }
 
     useEffect(() => {
-        loadUsers()
-    }, [])
+        loadUsers();
+    }, []);
 
     function handleEdit(user: User) {
-        setSelectedUser(user)
-        setIsModalOpen(true)
+        setSelectedUser(user);
+        setIsModalOpen(true);
     }
 
     function handleCloseModal() {
-        setIsModalOpen(false)
-        setSelectedUser(null)
+        setIsModalOpen(false);
+        setSelectedUser(null);
     }
 
-    const filteredUsers = users.filter(user => {
-        const matchesSearch =
-            user.name.toLowerCase().includes(search.toLowerCase()) ||
-            user.email.toLowerCase().includes(search.toLowerCase())
+    const filteredUsers = users
+        .filter((user) => {
+            const matchesSearch =
+                user.name.toLowerCase().includes(search.toLowerCase()) ||
+                user.email.toLowerCase().includes(search.toLowerCase());
 
-        const matchesStatus =
-            filterStatus === 'all' ? true :
-            filterStatus === 'active' ? !user.isInactive :
-            user.isInactive; 
+            const matchesStatus =
+                filterStatus === 'all'
+                    ? true
+                    : filterStatus === 'active'
+                      ? !user.isInactive
+                      : user.isInactive;
 
-        return matchesSearch && matchesStatus;
-    })
+            return matchesSearch && matchesStatus;
+        })
+        .sort((a, b) => {
+            if (a.isInactive !== b.isInactive) {
+                return a.isInactive ? 1 : -1;
+            }
+            return a.name.localeCompare(b.name);
+        });
 
     return (
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-8">
-            <button 
-            onClick={() => navigate("/home")}
-            className="flex items-center gap-2 text-gray-500 hover:text-brand-600 transition-colors mb-6 font-medium"
+            <button
+                onClick={() => navigate('/home')}
+                className="flex items-center gap-2 text-gray-500 hover:text-brand-600 transition-colors mb-6 font-medium"
             >
                 <ChevronLeft className="w-4 h-4" />
-                Voltar ao Dashboard
+                <span className="text-base">Voltar ao Dashboard</span>
             </button>
 
-            <PageHeader 
+            <PageHeader
                 title="Gerenciamento de Usuários"
-                subtitle={loading ? "Carregando..." : `Total de ${filteredUsers.length} usuários`}
+                subtitle={
+                    loading
+                        ? 'Carregando...'
+                        : `Total de ${filteredUsers.length} usuários`
+                }
                 icon={<UsersIcon className="w-6 h-6 text-white" />}
-                iconBgColor="bg-blue-600"
+                iconBgColor="bg-orange-600"
                 action={
-                    <Button onClick={() => setIsModalOpen(true)} className="gap-2">
+                    <Button
+                        onClick={() => {
+                            setIsModalOpen(true);
+                        }}
+                        className="gap-2 bg-brand-500 hover:bg-brand-600 shadow-md"
+                    >
                         <Plus className="w-5 h-5" />
                         Novo Usuário
                     </Button>
@@ -85,62 +109,55 @@ export function Users() {
 
             <div className="flex flex-col md:flex-row gap-4 mb-6">
                 <div className="flex-1">
-                    <SearchBar 
-                        value={search} 
-                        onChange={setSearch} 
-                        placeholder="Buscar por nome ou email..." 
+                    <SearchBar
+                        value={search}
+                        onChange={setSearch}
+                        placeholder="Buscar por nome ou email..."
                     />
                 </div>
 
                 <div className="bg-white p-1 rounded-xl border border-gray-200 shadow-sm flex items-center h-[66px] px-4 gap-2">
                     <Filter className="w-4 h-4 text-gray-400 mr-2" />
-                    <button
-                    onClick={() => setFilterStatus('all')}
-                    className={`px-4 py-2 text-sm font-bold rounded-lg transition-all ${
-                        filterStatus === 'all' 
-                        ? 'bg-blue-50 text-blue-600' 
-                        : 'text-gray-500 hover:bg-gray-50'
-                    }`}
-                    >
-                        Todos
-                    </button>
-                    <button
-                    onClick={() => setFilterStatus('active')}
-                    className={`px-4 py-2 text-sm font-bold rounded-lg transition-all ${
-                        filterStatus === 'active' 
-                        ? 'bg-green-50 text-green-600' 
-                        : 'text-gray-500 hover:bg-gray-50'
-                    }`}
-                    >
-                        Ativos
-                    </button>
-                    <button
-                        onClick={() => setFilterStatus('inactive')}
-                        className={`px-4 py-2 text-sm font-bold rounded-lg transition-all ${
-                            filterStatus === 'inactive' 
-                            ? 'bg-red-50 text-red-600' 
-                            : 'text-gray-500 hover:bg-gray-50'
-                        }`}
-                    >
-                        Inativos
-                    </button>
+                    {(['all', 'active', 'inactive'] as const).map((opt) => (
+                        <button
+                            key={opt}
+                            type="button"
+                            onClick={() => setFilterStatus(opt)}
+                            className={`px-4 py-2 text-sm font-bold rounded-lg transition-all ${
+                                filterStatus === opt
+                                    ? 'bg-blue-50 text-blue-600'
+                                    : 'text-gray-500 hover:bg-gray-50'
+                            }`}
+                        >
+                            {opt === 'all'
+                                ? 'Todas'
+                                : opt === 'active'
+                                  ? 'Ativas'
+                                  : 'Inativas'}
+                        </button>
+                    ))}
                 </div>
-            </div>    
+            </div>
 
             {loading ? (
-                <div className="text-center py-20 text-gray-400">Carregando lista...</div>
+                <div className="flex justify-center py-20">
+                    <Loader2 className="w-12 h-12 text-brand-500 animate-spin" />
+                    <p className="text-gray-500 font-medium">
+                        Buscando dados no servidor...
+                    </p>
+                </div>
             ) : (
                 <UserTable users={filteredUsers} onEdit={handleEdit} />
             )}
 
-            <UserModal 
-                key={selectedUser?.userId || 'new'}
-                isOpen={isModalOpen} 
-                onClose={handleCloseModal} 
+            <UserModal
+                key={`${selectedUser?.userId || 'new'}-${isModalOpen}`}
+                isOpen={isModalOpen}
+                onClose={handleCloseModal}
                 userToEdit={selectedUser}
-                title={selectedUser ? "Editar Usuário" : "Novo Usuário"}
+                title={selectedUser ? 'Editar Usuário' : 'Novo Usuário'}
                 onSuccess={loadUsers}
             />
         </div>
-    )
+    );
 }
