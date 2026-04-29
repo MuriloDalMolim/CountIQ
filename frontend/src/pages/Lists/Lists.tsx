@@ -21,6 +21,12 @@ import { type List } from './ListTable';
 
 type FilterStatus = 'all' | 'active' | 'inactive';
 
+interface ListFromBackend extends List {
+    _count?: {
+        product_list: number;
+    };
+}
+
 export function Lists() {
     const navigate = useNavigate();
     const [lists, setLists] = useState<List[]>([]);
@@ -37,7 +43,13 @@ export function Lists() {
         try {
             setLoading(true);
             const response = await listsService.list();
-            setLists(Array.isArray(response.data) ? response.data : []);
+            const backendData = response.data as ListFromBackend[];
+            const formattedLists: List[] = backendData.map((item) => ({
+                ...item,
+                productsCount: item._count?.product_list || 0,
+            }));
+
+            setLists(formattedLists);
         } catch (error) {
             console.error('Erro ao carregar listas:', error);
         } finally {

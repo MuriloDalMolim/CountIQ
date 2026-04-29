@@ -1,125 +1,133 @@
-import { prisma } from "../db.js";
-import { Prisma } from "@prisma/client";
-import { AppError } from "../utilities/AppError.js";
+import { prisma } from '../db.js';
+import { Prisma } from '@prisma/client';
+import { AppError } from '../utilities/AppError.js';
 
 interface createListData {
-    description: string,
-    companyId: number,
-    isInactive: boolean
+    description: string;
+    companyId: number;
+    isInactive: boolean;
 }
 
 interface updateListData {
-    description?: string,
-    isInactive?: boolean
+    description?: string;
+    isInactive?: boolean;
 }
 
 export const listService = {
-
-    async getListById(listIdGet:number, authId: number){
-        try{
+    async getListById(listIdGet: number, authId: number) {
+        try {
             const list = await prisma.list.findFirst({
-                where:{
+                where: {
                     listId: listIdGet,
-                    companyId: authId 
+                    companyId: authId,
                 },
-                select:{
+                select: {
                     listId: true,
                     description: true,
                     companyId: true,
-                    isInactive: true
-                }
-            })
-            if(!list){
-                throw new AppError("Lista não encontrada.", 404)
+                    isInactive: true,
+                },
+            });
+            if (!list) {
+                throw new AppError('Lista não encontrada.', 404);
             }
 
-            return list
-        }catch(error){
-            console.log(error)
-            throw error
+            return list;
+        } catch (error) {
+            console.log(error);
+            throw error;
         }
     },
 
-    async getAllList(authId: number){
-        try{
+    async getAllList(authId: number) {
+        try {
             return await prisma.list.findMany({
-                where:{
-                    companyId: authId
+                where: {
+                    companyId: authId,
                 },
-                select:{
+                select: {
                     listId: true,
                     description: true,
                     companyId: true,
-                    isInactive: true
-                }
-            })
-        }catch(error){
-            console.log(error)
-            throw error
+                    isInactive: true,
+                    _count: {
+                        select: {
+                            product_list: true,
+                        },
+                    },
+                },
+            });
+        } catch (error) {
+            console.log(error);
+            throw error;
         }
     },
 
-    async createList(data: createListData){
-        try{
+    async createList(data: createListData) {
+        try {
             const list = await prisma.list.create({
-                data:{
+                data: {
                     description: data.description,
                     isInactive: data.isInactive || false,
-                    companyId: data.companyId
+                    companyId: data.companyId,
                 },
-                    select:{
+                select: {
                     listId: true,
                     description: true,
                     companyId: true,
-                    isInactive: true
-                }   
-            })
+                    isInactive: true,
+                },
+            });
 
-            return list
-        }catch (error){
-            console.log(error)
-            throw error
+            return list;
+        } catch (error) {
+            console.log(error);
+            throw error;
         }
     },
 
-    async updateList(listIdUpdate: number,data: updateListData, authId: number){
-        try{
+    async updateList(
+        listIdUpdate: number,
+        data: updateListData,
+        authId: number,
+    ) {
+        try {
             const listToUpdate = await prisma.list.findFirst({
-                where:{
+                where: {
                     companyId: authId,
-                    listId: listIdUpdate
-                }
-            })
-            if(!listToUpdate){
-                throw new AppError("Lista não encontrada.", 404)
+                    listId: listIdUpdate,
+                },
+            });
+            if (!listToUpdate) {
+                throw new AppError('Lista não encontrada.', 404);
             }
 
-            const dataToUpdate: Prisma.listUpdateInput = {}
+            const dataToUpdate: Prisma.listUpdateInput = {};
 
             if (data.description !== undefined) {
-                dataToUpdate.description = data.description
+                dataToUpdate.description = data.description;
             }
             if (data.isInactive !== undefined) {
-                dataToUpdate.isInactive = data.isInactive
+                dataToUpdate.isInactive = data.isInactive;
             }
 
             const list = await prisma.list.update({
-                where:{
-                    listId: listIdUpdate
+                where: {
+                    listId: listIdUpdate,
                 },
                 data: dataToUpdate,
-                select:{
+                select: {
                     listId: true,
                     description: true,
                     companyId: true,
-                    isInactive: true
-                }
-            })
+                    isInactive: true,
+                },
+            });
 
-            return list
-        } catch (error){
-            console.log(error)
-            throw error
+            return list;
+        } catch (error) {
+            console.log(error);
+            throw error;
         }
-    }
-}
+    },
+};
