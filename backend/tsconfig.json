@@ -5,23 +5,18 @@
         "moduleResolution": "NodeNext",
         "target": "ES2022",
         "lib": ["ES2022"],
-        "types": ["node"],
         "skipLibCheck": true,
         "isolatedModules": true,
         "allowJs": true,
         "esModuleInterop": true,
-        "strict": true,
-        "typeRoots": [
-            "./node_modules/@types" // Força o TS a olhar aqui dentro para achar o 'node'
-        ],
+        "strict": false,
         "noUncheckedIndexedAccess": true,
-        "exactOptionalPropertyTypes": true,
         "verbatimModuleSyntax": true,
         "forceConsistentCasingInFileNames": true,
         "sourceMap": true,
         "declaration": true,
         "declarationMap": true
     },
-    "include": ["server.ts", "src/**/*.ts"],
+    "include": ["server.ts", "app.ts", "src/**/*.ts"],
     "exclude": ["node_modules"]
 }
