@@ -5,7 +5,6 @@
         "moduleResolution": "NodeNext",
         "target": "ES2022",
         "lib": ["ESNext"],
-        "types": ["node"],
         "skipLibCheck": true,
         "isolatedModules": true,
         "allowJs": true,
