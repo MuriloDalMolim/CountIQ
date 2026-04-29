@@ -11,6 +11,9 @@
         "allowJs": true,
         "esModuleInterop": true,
         "strict": true,
+        "typeRoots": [
+            "./node_modules/@types" // Força o TS a olhar aqui dentro para achar o 'node'
+        ],
         "noUncheckedIndexedAccess": true,
         "exactOptionalPropertyTypes": true,
         "verbatimModuleSyntax": true,
