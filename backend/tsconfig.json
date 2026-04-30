@@ -1,27 +1,23 @@
 {
-  "compilerOptions": {
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "target": "ES2022",
-    "lib": ["ESNext"],
-    "skipLibCheck": true,
-    "isolatedModules": true,
-    "allowJs": true,
-    "esModuleInterop": true,
-    "strict": true,
-    "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true,
-    "verbatimModuleSyntax": true,
-    "forceConsistentCasingInFileNames": true,
-    "sourceMap": true,
-    "declaration": true,
-    "declarationMap": true
-  },
-  "include": [
-    "server.ts", 
-    "src/**/*.ts" 
-  ],
-  "exclude": [
-    "node_modules",
-  ]
+    "compilerOptions": {
+        "outDir": "./dist",
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
+        "target": "ES2022",
+        "lib": ["ES2022"],
+        "types": ["node"],
+        "skipLibCheck": true,
+        "isolatedModules": true,
+        "allowJs": true,
+        "esModuleInterop": true,
+        "strict": true,
+        "noUncheckedIndexedAccess": true,
+        "verbatimModuleSyntax": true,
+        "forceConsistentCasingInFileNames": true,
+        "sourceMap": true,
+        "declaration": true,
+        "declarationMap": true
+    },
+    "include": ["server.ts", "app.ts", "src/**/*.ts"],
+    "exclude": ["node_modules"]
 }

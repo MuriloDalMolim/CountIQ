@@ -1,5 +1,9 @@
 {
-  "devDependencies": {
-    "prettier": "3.8.2"
-  }
+    "devDependencies": {
+        "@types/node": "^20.19.39",
+        "prettier": "3.8.2"
+    },
+    "dependencies": {
+        "pg": "^8.20.0"
+    }
 }

@@ -1,88 +1,87 @@
 generator client {
-  provider = "prisma-client-js"
+    provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url = env("DATABASE_URL")
+    provider = "postgresql"
 }
 
 model company {
-    companyId       Int         @id @default(autoincrement()) @map("companyid")
-    name            String
-    cnpj            String      @unique @db.VarChar(14)
-    isInactive      Boolean     @default(false) @map("isinactive")
+    companyId  Int     @id @default(autoincrement()) @map("companyid")
+    name       String
+    cnpj       String  @unique @db.VarChar(14)
+    isInactive Boolean @default(false) @map("isinactive")
 
-    users user[]
+    users    user[]
     products product[]
-    lists list[]
+    lists    list[]
 }
 
 model user {
-    userId          Int         @id @default(autoincrement()) @map("userid")
-    name            String
-    email           String      @unique
-    password        String
-    isInactive      Boolean     @default(false) @map("isinactive")
-    isAdmin         Boolean     @default(false) @map("isadmin")
-    companyId       Int         @map("companyid")
-    company         company     @relation(fields: [companyId], references: [companyId])
+    userId     Int     @id @default(autoincrement()) @map("userid")
+    name       String
+    email      String  @unique
+    password   String
+    isInactive Boolean @default(false) @map("isinactive")
+    isAdmin    Boolean @default(false) @map("isadmin")
+    companyId  Int     @map("companyid")
+    company    company @relation(fields: [companyId], references: [companyId])
 
-    list_count      list_count[]
+    list_count list_count[]
 }
 
 model product {
-    productId       Int         @id @default(autoincrement()) @map("productid")
-    description     String
-    barcode         String      
-    isInactive      Boolean     @default(false) @map("isinactive")
-    companyId       Int         @map("companyid")
-    company         company     @relation(fields: [companyId], references: [companyId])
+    productId    Int            @id @default(autoincrement()) @map("productid")
+    description  String
+    barcode      String
+    isInactive   Boolean        @default(false) @map("isinactive")
+    companyId    Int            @map("companyid")
+    company      company        @relation(fields: [companyId], references: [companyId])
+    product_list product_list[]
+    count_item   count_item[]
 
     @@unique([companyId, barcode])
-    product_list    product_list[]
-    count_item      count_item[]
 }
 
 model list {
-    listId          Int         @id @default(autoincrement()) @map("listid")
-    description     String
-    companyId       Int         @map("companyid")
-    isInactive      Boolean     @default(false) @map("isinactive")
-    company         company     @relation(fields: [companyId], references: [companyId])
+    listId      Int     @id @default(autoincrement()) @map("listid")
+    description String
+    companyId   Int     @map("companyid")
+    isInactive  Boolean @default(false) @map("isinactive")
+    company     company @relation(fields: [companyId], references: [companyId])
 
-    product_list    product_list[]
-    list_count      list_count[]
+    product_list product_list[]
+    list_count   list_count[]
 }
 
 model product_list {
-    listId          Int         @map("listid")
-    productId       Int         @map("productid")
-    list            list        @relation(fields: [listId], references: [listId])
-    product         product     @relation(fields: [productId], references: [productId])
+    listId    Int     @map("listid")
+    productId Int     @map("productid")
+    list      list    @relation(fields: [listId], references: [listId])
+    product   product @relation(fields: [productId], references: [productId])
 
-    @@id([listId,productId])
+    @@id([listId, productId])
 }
 
 model list_count {
-    listCountId     Int         @id @default(autoincrement()) @map("listcountid")
-    status          String      @default("Aberta")
-    updateAt        DateTime    @updatedAt @map("updateat")
-    listId          Int         @map("listid")
-    userId          Int         @map("userid")
-    list            list        @relation(fields: [listId], references: [listId])
-    user            user        @relation(fields: [userId], references: [userId])
+    listCountId Int      @id @default(autoincrement()) @map("listcountid")
+    status      String   @default("Aberta")
+    updateAt    DateTime @updatedAt @map("updateat")
+    listId      Int      @map("listid")
+    userId      Int      @map("userid")
+    list        list     @relation(fields: [listId], references: [listId])
+    user        user     @relation(fields: [userId], references: [userId])
 
-    count_item      count_item[]
+    count_item count_item[]
 }
 
-model count_item{
-    quantity        Int         @default(0)
-    updateAt        DateTime    @updatedAt @map("updateat")
-    listCountId     Int         @map("listcountid")
-    productId       Int         @map("productid")
-    list_count      list_count  @relation(fields: [listCountId], references: [listCountId])
-    product         product     @relation(fields: [productId], references: [productId])
+model count_item {
+    quantity    Int        @default(0)
+    updateAt    DateTime   @updatedAt @map("updateat")
+    listCountId Int        @map("listcountid")
+    productId   Int        @map("productid")
+    list_count  list_count @relation(fields: [listCountId], references: [listCountId])
+    product     product    @relation(fields: [productId], references: [productId])
 
     @@id([listCountId, productId])
 }
