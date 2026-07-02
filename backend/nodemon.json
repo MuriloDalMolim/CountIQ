@@ -1,6 +1,6 @@
 {
-  "watch": ["."],
-  "ext": "ts,js,json,prisma",
-  "ignore": ["node_modules", "generated"],
-  "exec": "node --no-warnings --loader ts-node/esm server.ts"
+    "watch": ["."],
+    "ext": "ts,js,json,prisma",
+    "ignore": ["node_modules", "generated"],
+    "exec": "tsx server.ts"
 }
