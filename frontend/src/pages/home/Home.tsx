@@ -47,7 +47,7 @@ export function Home() {
     ];
 
     return (
-        <main className="max-w-7xl mx-auto px-8 py-12">
+        <main className="max-w-7xl mx-auto px-4 md:px-8 py-8 md:py-12">
             <div className="mb-10">
                 <h2 className="text-3xl font-bold text-gray-900 mb-2">
                     Bem-vindo, {user?.name?.split(' ')[0] || 'Admin'}!

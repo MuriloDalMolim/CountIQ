@@ -16,7 +16,7 @@ export function Auth() {
                 <p className="text-gray-500">Gestão e contagem inteligente</p>
             </header>
 
-            <main className="w-full max-w-[450px] rounded-2xl bg-white p-8 shadow-xl shadow-gray-200/50 border border-gray-100">
+            <main className="w-full max-w-[450px] rounded-2xl bg-white p-6 md:p-8 shadow-xl shadow-gray-200/50 border border-gray-100">
                 <div className="mb-8 flex rounded-xl bg-brand-50 p-1.5">
                     <button
                         onClick={() => setAuthMode('login')}

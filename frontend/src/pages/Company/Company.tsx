@@ -92,7 +92,7 @@ export function Company() {
                 Voltar ao Dashboard
             </button>
 
-            <div className="flex justify-between items-center mb-8">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                 <div className="flex items-center gap-4">
                     <div className="bg-brand-500 p-3 rounded-2xl shadow-lg shadow-brand-100">
                         <Building2 className="w-8 h-8 text-white" />
@@ -110,7 +110,7 @@ export function Company() {
                 {!isEditing && (
                     <button
                         onClick={() => setIsEditing(true)}
-                        className="flex items-center gap-2 px-6 py-3 bg-brand-500 text-white rounded-2xl font-bold hover:bg-[#7d360f] transition-all shadow-md"
+                        className="flex items-center gap-2 px-6 py-3 bg-brand-500 text-white rounded-2xl font-bold hover:bg-[#7d360f] transition-all shadow-md w-full md:w-auto"
                     >
                         <Edit3 className="w-5 h-5" /> Editar Informações
                     </button>
@@ -118,7 +118,7 @@ export function Company() {
             </div>
 
             <div className="bg-white rounded-[32px] border border-gray-100 shadow-sm overflow-hidden">
-                <div className="bg-brand-500 p-8 text-white flex justify-between items-center">
+                <div className="bg-brand-500 p-6 md:p-8 text-white flex flex-col md:flex-row justify-between md:items-center gap-4">
                     <div>
                         <h2 className="text-2xl font-bold">
                             {companyData?.name}
@@ -127,12 +127,12 @@ export function Company() {
                             CNPJ: {companyData?.cnpj}
                         </p>
                     </div>
-                    <span className="bg-white/20 backdrop-blur-md px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider">
+                    <span className="bg-white/20 backdrop-blur-md px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider self-start">
                         Empresa Ativa
                     </span>
                 </div>
 
-                <div className="p-8">
+                <div className="p-6 md:p-8">
                     <div className="flex items-center gap-2 mb-8 text-gray-900 font-bold border-b border-gray-50 pb-4">
                         <div className="p-1.5 bg-blue-50 text-brand-500 rounded-lg">
                             <Info className="w-5 h-5" />
@@ -175,7 +175,7 @@ export function Company() {
                 </div>
 
                 {isEditing && (
-                    <div className="p-8 pt-4 flex flex-col md:flex-row gap-4 border-t border-gray-50">
+                    <div className="p-6 md:p-8 pt-4 flex flex-col md:flex-row gap-4 border-t border-gray-50">
                         <button
                             onClick={() => setIsEditing(false)}
                             disabled={saving}

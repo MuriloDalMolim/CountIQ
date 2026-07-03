@@ -111,7 +111,7 @@ export function Products() {
                             setSelectedProduct(null);
                             setIsModalOpen(true);
                         }}
-                        className="gap-2 bg-brand-500 hover:bg-brand-600 shadow-md"
+                        className="gap-2 bg-brand-500 hover:bg-brand-600 shadow-md w-full md:w-auto"
                     >
                         <Plus className="w-5 h-5" />
                         Novo Produto
@@ -128,7 +128,7 @@ export function Products() {
                     />
                 </div>
 
-                <div className="bg-white p-1 rounded-xl border border-gray-200 shadow-sm flex items-center h-[66px] px-4 gap-2">
+                <div className="bg-white p-1 rounded-xl border border-gray-200 shadow-sm flex items-center h-[66px] px-4 gap-2 overflow-x-auto">
                     <Filter className="w-4 h-4 text-gray-400 mr-2" />
                     {(['all', 'active', 'inactive'] as const).map((opt) => (
                         <button

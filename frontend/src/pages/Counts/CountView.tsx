@@ -138,7 +138,7 @@ export function CountView() {
                 action={
                     <Button
                         onClick={() => window.print()}
-                        className="bg-gray-800 hover:bg-black gap-2"
+                        className="bg-gray-800 hover:bg-black gap-2 w-full md:w-auto"
                     >
                         <Printer className="w-4 h-4" /> Imprimir PDF
                     </Button>
@@ -154,59 +154,95 @@ export function CountView() {
             </div>
 
             <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
-                <table className="w-full text-left border-collapse">
-                    <thead className="bg-gray-50 border-b border-gray-100">
-                        <tr>
-                            <th className="px-6 py-4 text-sm font-bold text-gray-600">
-                                Produto
-                            </th>
-                            <th className="px-6 py-4 text-sm font-bold text-gray-600">
-                                Cód. Barras
-                            </th>
-                            <th className="px-6 py-4 text-sm font-bold text-center text-gray-600">
-                                Qtd Contada
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-50">
-                        {filteredItems.map((item) => {
-                            const qty =
-                                session.count_item.find(
-                                    (ci: CountItemData) =>
-                                        ci.productId === item.productId,
-                                )?.quantity || 0;
-                            return (
-                                <tr
-                                    key={item.productId}
-                                    className="hover:bg-gray-50/50 transition-colors"
-                                >
-                                    <td className="px-6 py-4">
-                                        <p className="font-bold text-gray-900">
-                                            {item.product?.description ||
-                                                item.description ||
-                                                'Sem descrição'}
-                                        </p>
-                                        <p className="text-xs text-gray-400">
-                                            ID: {item.productId}
-                                        </p>
-                                    </td>
-                                    <td className="px-6 py-4 font-mono text-sm text-gray-500">
+                <div className="hidden md:block overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                        <thead className="bg-gray-50 border-b border-gray-100">
+                            <tr>
+                                <th className="px-6 py-4 text-sm font-bold text-gray-600">
+                                    Produto
+                                </th>
+                                <th className="px-6 py-4 text-sm font-bold text-gray-600">
+                                    Cód. Barras
+                                </th>
+                                <th className="px-6 py-4 text-sm font-bold text-center text-gray-600">
+                                    Qtd Contada
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-50">
+                            {filteredItems.map((item) => {
+                                const qty =
+                                    session.count_item.find(
+                                        (ci: CountItemData) =>
+                                            ci.productId === item.productId,
+                                    )?.quantity || 0;
+                                return (
+                                    <tr
+                                        key={item.productId}
+                                        className="hover:bg-gray-50/50 transition-colors"
+                                    >
+                                        <td className="px-6 py-4">
+                                            <p className="font-bold text-gray-900">
+                                                {item.product?.description ||
+                                                    item.description ||
+                                                    'Sem descrição'}
+                                            </p>
+                                            <p className="text-xs text-gray-400">
+                                                ID: {item.productId}
+                                            </p>
+                                        </td>
+                                        <td className="px-6 py-4 font-mono text-sm text-gray-500">
+                                            {item.product?.barcode ||
+                                                item.barcode ||
+                                                '---'}
+                                        </td>
+                                        <td className="px-6 py-4 text-center">
+                                            <span
+                                                className={`inline-block px-3 py-1 rounded-lg font-black text-lg ${qty > 0 ? 'text-brand-600' : 'text-gray-300'}`}
+                                            >
+                                                {qty}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div className="md:hidden divide-y divide-gray-50">
+                    {filteredItems.map((item) => {
+                        const qty =
+                            session.count_item.find(
+                                (ci: CountItemData) =>
+                                    ci.productId === item.productId,
+                            )?.quantity || 0;
+                        return (
+                            <div
+                                key={item.productId}
+                                className="px-4 py-4 flex items-center justify-between gap-3"
+                            >
+                                <div className="min-w-0">
+                                    <p className="font-bold text-gray-900 truncate">
+                                        {item.product?.description ||
+                                            item.description ||
+                                            'Sem descrição'}
+                                    </p>
+                                    <p className="text-xs text-gray-400 font-mono truncate">
                                         {item.product?.barcode ||
                                             item.barcode ||
                                             '---'}
-                                    </td>
-                                    <td className="px-6 py-4 text-center">
-                                        <span
-                                            className={`inline-block px-3 py-1 rounded-lg font-black text-lg ${qty > 0 ? 'text-brand-600' : 'text-gray-300'}`}
-                                        >
-                                            {qty}
-                                        </span>
-                                    </td>
-                                </tr>
-                            );
-                        })}
-                    </tbody>
-                </table>
+                                    </p>
+                                </div>
+                                <span
+                                    className={`shrink-0 inline-block px-3 py-1 rounded-lg font-black text-lg ${qty > 0 ? 'text-brand-600' : 'text-gray-300'}`}
+                                >
+                                    {qty}
+                                </span>
+                            </div>
+                        );
+                    })}
+                </div>
             </div>
         </div>
     );

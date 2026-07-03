@@ -75,7 +75,7 @@ function ProductItem({ item, initialQty, onUpdate }: ProductItemProps) {
                 </p>
             </div>
 
-            <div className="flex items-center gap-4 bg-gray-50 p-2 rounded-xl border border-gray-100">
+            <div className="flex items-center justify-center gap-4 bg-gray-50 p-2 rounded-xl border border-gray-100 w-full md:w-auto">
                 <button
                     disabled={loading || Number(localQty) <= 0}
                     onClick={async (e) => {
@@ -84,12 +84,12 @@ function ProductItem({ item, initialQty, onUpdate }: ProductItemProps) {
                         await onUpdate(item.productId, -1, 'increment');
                         setLoading(false);
                     }}
-                    className="p-2 bg-white text-gray-600 rounded-lg shadow-sm hover:text-red-600 disabled:opacity-50 transition-colors"
+                    className="p-3 md:p-2 bg-white text-gray-600 rounded-lg shadow-sm hover:text-red-600 disabled:opacity-50 transition-colors"
                 >
-                    <Minus className="w-5 h-5" />
+                    <Minus className="w-6 h-6 md:w-5 md:h-5" />
                 </button>
 
-                <div className="w-20 text-center">
+                <div className="w-24 md:w-20 text-center">
                     {loading ? (
                         <Loader2 className="w-5 h-5 animate-spin mx-auto text-brand-500" />
                     ) : (
@@ -98,7 +98,7 @@ function ProductItem({ item, initialQty, onUpdate }: ProductItemProps) {
                             value={localQty}
                             onChange={(e) => setLocalQty(e.target.value)}
                             onBlur={handleBlur}
-                            className="w-full text-center bg-transparent font-bold text-xl text-brand-600 focus:outline-none"
+                            className="w-full text-center bg-transparent font-bold text-2xl md:text-xl text-brand-600 focus:outline-none"
                         />
                     )}
                 </div>
@@ -111,9 +111,9 @@ function ProductItem({ item, initialQty, onUpdate }: ProductItemProps) {
                         await onUpdate(item.productId, 1, 'increment');
                         setLoading(false);
                     }}
-                    className="p-2 bg-white text-gray-600 rounded-lg shadow-sm hover:text-green-600 disabled:opacity-50 transition-colors"
+                    className="p-3 md:p-2 bg-white text-gray-600 rounded-lg shadow-sm hover:text-green-600 disabled:opacity-50 transition-colors"
                 >
-                    <Plus className="w-5 h-5" />
+                    <Plus className="w-6 h-6 md:w-5 md:h-5" />
                 </button>
             </div>
         </div>
@@ -234,7 +234,7 @@ export function Counting() {
                 action={
                     <Button
                         onClick={() => navigate('/counts')}
-                        className="bg-green-600 hover:bg-green-700"
+                        className="bg-green-600 hover:bg-green-700 w-full md:w-auto"
                     >
                         <Save className="w-4 h-4 mr-2" /> Finalizar
                     </Button>
