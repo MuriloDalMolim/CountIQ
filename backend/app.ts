@@ -1,25 +1,30 @@
-import express from "express";
-import cors from "cors";
-import { companyRoutes } from "./src/routes/companyRoutes.js";
-import { userRoutes } from "./src/routes/userRoutes.js";
-import { authRoutes } from "./src/routes/authRoutes.js";
-import { productRoutes } from "./src/routes/productRoutes.js";
-import { listRoutes } from "./src/routes/listRoutes.js";
-import { productListRoutes } from "./src/routes/product_listRoutes.js";
-import { listCountRoutes } from "./src/routes/list_countRoutes.js";
-import { countItemRoutes } from "./src/routes/count_ItemRoutes.js";
+import express from 'express';
+import cors from 'cors';
+import { companyRoutes } from './src/routes/companyRoutes.js';
+import { userRoutes } from './src/routes/userRoutes.js';
+import { authRoutes } from './src/routes/authRoutes.js';
+import { productRoutes } from './src/routes/productRoutes.js';
+import { listRoutes } from './src/routes/listRoutes.js';
+import { productListRoutes } from './src/routes/product_listRoutes.js';
+import { listCountRoutes } from './src/routes/list_countRoutes.js';
+import { countItemRoutes } from './src/routes/count_ItemRoutes.js';
 
-const app=express()
-app.use(cors());
-app.use(express.json())
- 
-app.use("/company", companyRoutes)
-app.use("/users", userRoutes)
-app.use("/product", productRoutes)
-app.use("/auth", authRoutes)
-app.use("/list", listRoutes)
-app.use("/productlist", productListRoutes)
-app.use("/listcount", listCountRoutes)
-app.use("/countitem", countItemRoutes)
+const app = express();
+app.use(
+    cors({
+        origin: process.env.FRONTEND_URL,
+        credentials: true,
+    }),
+);
+app.use(express.json());
 
-export default app
+app.use('/company', companyRoutes);
+app.use('/users', userRoutes);
+app.use('/product', productRoutes);
+app.use('/auth', authRoutes);
+app.use('/list', listRoutes);
+app.use('/productlist', productListRoutes);
+app.use('/listcount', listCountRoutes);
+app.use('/countitem', countItemRoutes);
+
+export default app;
