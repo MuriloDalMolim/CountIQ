@@ -4,6 +4,7 @@ import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { usersService } from '../../features/users/services';
 import { type User } from './UserTable';
+import { AxiosError } from 'axios';
 
 interface UserModalProps {
     isOpen: boolean;
@@ -27,11 +28,15 @@ export function UserModal({
         isAdmin: userToEdit?.isAdmin ?? false,
         isInactive: userToEdit?.isInactive ?? false,
     });
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     if (!isOpen) return null;
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
+        setErrorMessage(null);
+        setIsSubmitting(true);
         try {
             if (userToEdit) {
                 await usersService.update(userToEdit.userId, formData);
@@ -41,7 +46,15 @@ export function UserModal({
             onSuccess();
             onClose();
         } catch (error) {
-            console.error('Erro ao salvar:', error);
+            const message =
+                error instanceof AxiosError
+                    ? error.response?.data?.error
+                    : undefined;
+            setErrorMessage(
+                message ?? 'Erro ao salvar usuário. Tente novamente.',
+            );
+        } finally {
+            setIsSubmitting(false);
         }
     }
 
@@ -59,6 +72,11 @@ export function UserModal({
                 </div>
 
                 <form className="p-6 space-y-4" onSubmit={handleSubmit}>
+                    {errorMessage && (
+                        <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg">
+                            {errorMessage}
+                        </div>
+                    )}
                     <Input
                         label="Nome Completo"
                         placeholder="Ex: João"
@@ -149,11 +167,14 @@ export function UserModal({
                         </Button>
                         <Button
                             type="submit"
+                            disabled={isSubmitting}
                             className="flex-1 py-3 bg-orange-700 hover:bg-orange-800 border-none"
                         >
-                            {userToEdit
-                                ? 'Salvar Alterações'
-                                : 'Cadastrar Usuário'}
+                            {isSubmitting
+                                ? 'Salvando...'
+                                : userToEdit
+                                  ? 'Salvar Alterações'
+                                  : 'Cadastrar Usuário'}
                         </Button>
                     </div>
                 </form>

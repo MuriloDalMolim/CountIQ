@@ -1,65 +1,63 @@
-import { prisma } from "../db.js";
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
-import { AppError } from "../utilities/AppError.js";
+import { prisma } from '../db.js';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import { AppError } from '../utilities/AppError.js';
 
-interface loginData{
-    email: string
-    password: string
+interface loginData {
+    email: string;
+    password: string;
 }
- 
+
 interface SignUpData {
+    companyName: string;
+    companyCnpj: string;
 
-  companyName: string
-  companyCnpj: string
-
-  userName: string
-  userEmail: string
-  userPassword: string
+    userName: string;
+    userEmail: string;
+    userPassword: string;
 }
 
 export const authService = {
-    async login({email, password}: loginData){
-
+    async login({ email, password }: loginData) {
         const user = await prisma.user.findFirst({
-            where:{
+            where: {
                 email: email,
             },
-            include:{
-                company: true
-            }
-        })
-        if(!user){
-            throw new AppError("Email ou senha inválidos.", 401)
+            include: {
+                company: true,
+            },
+        });
+        if (!user) {
+            throw new AppError('Email ou senha inválidos.', 401);
         }
 
-        if(user.isInactive){
-            throw new AppError("Este usuário está inativo.", 403)
+        if (user.isInactive) {
+            throw new AppError('Este usuário está inativo.', 403);
         }
 
         if (user.company.isInactive === true) {
-            throw new AppError("A empresa desta conta está inativa.", 403)
+            throw new AppError('A empresa desta conta está inativa.', 403);
         }
 
-        const checkPassword = await bcrypt.compare(password, user.password)
-            if (!checkPassword) {
-                throw new AppError("Email ou senha inválidos.", 401)
-            }
+        const checkPassword = await bcrypt.compare(password, user.password);
+        if (!checkPassword) {
+            throw new AppError('Email ou senha inválidos.', 401);
+        }
 
-        const secret = process.env.JWT_SECRET
-        if(!secret){
-            throw new AppError("Erro interno de configuração.", 500)
+        const secret = process.env.JWT_SECRET;
+        if (!secret) {
+            throw new AppError('Erro interno de configuração.', 500);
         }
 
         const token = jwt.sign(
             {
                 userId: user.userId,
                 companyId: user.companyId,
-                isAdmin: user.isAdmin
+                isAdmin: user.isAdmin,
             },
             secret,
-            { expiresIn: "1d" }
-        )
+            { expiresIn: '1d' },
+        );
 
         return {
             user: {
@@ -69,51 +67,50 @@ export const authService = {
                 isInactive: user.isInactive,
                 isAdmin: user.isAdmin,
                 companyId: user.companyId,
-                company:{
+                company: {
                     name: user.company.name,
-                    cnpj: user.company.cnpj
-                }
+                    cnpj: user.company.cnpj,
+                },
             },
-            token: token
-        }
+            token: token,
+        };
     },
 
-    async signUp(data: SignUpData){
-        try{
-            const hash = await bcrypt.hash(data.userPassword,10)
+    async signUp(data: SignUpData) {
+        try {
+            const hash = await bcrypt.hash(data.userPassword, 10);
 
-            const cleanCnpj = data.companyCnpj.replace(/\D/g, '')
+            const cleanCnpj = data.companyCnpj.replace(/\D/g, '');
 
-            if(cleanCnpj.length != 14){
-                throw new AppError("Verifique o CNPJ e tente novamente.", 400)
+            if (cleanCnpj.length != 14) {
+                throw new AppError('Verifique o CNPJ e tente novamente.', 400);
             }
 
             const emailExists = await prisma.user.findFirst({
-                where:{
-                    email: data.userEmail
-                }
-            })
-            if(emailExists){
-                throw new AppError("Email indisponível.", 409)
+                where: {
+                    email: data.userEmail,
+                },
+            });
+            if (emailExists) {
+                throw new AppError('Este email já está em uso..', 409);
             }
 
             const companyExists = await prisma.company.findUnique({
-                where:{
-                    cnpj: cleanCnpj
-                }
-            })
-            if(companyExists){
-                throw new AppError("CNPJ não disponível.", 409)
+                where: {
+                    cnpj: cleanCnpj,
+                },
+            });
+            if (companyExists) {
+                throw new AppError('CNPJ não disponível.', 409);
             }
 
-            const result = await prisma.$transaction(async(tx)=>{
-
+            const result = await prisma.$transaction(async (tx) => {
                 const company = await tx.company.create({
                     data: {
                         name: data.companyName,
-                        cnpj: cleanCnpj
-                    }
-                })
+                        cnpj: cleanCnpj,
+                    },
+                });
                 const user = await tx.user.create({
                     data: {
                         name: data.userName,
@@ -122,40 +119,40 @@ export const authService = {
                         isAdmin: true,
                         companyId: company.companyId,
                     },
-                    select: { 
+                    select: {
                         userId: true,
                         name: true,
                         email: true,
                         isAdmin: true,
                         isInactive: true,
                         companyId: true,
-                    }
-                })
-                return {company,user}
-            })
+                    },
+                });
+                return { company, user };
+            });
 
-            const secret = process.env.JWT_SECRET
-            if(!secret){
-                throw new AppError("Erro interno de configuração.", 500)
+            const secret = process.env.JWT_SECRET;
+            if (!secret) {
+                throw new AppError('Erro interno de configuração.', 500);
             }
 
             const token = jwt.sign(
                 {
                     userId: result.user.userId,
                     companyId: result.user.companyId,
-                    isAdmin: result.user.isAdmin
+                    isAdmin: result.user.isAdmin,
                 },
                 secret,
-                { expiresIn: "1d" }
-            )
+                { expiresIn: '1d' },
+            );
 
-            return{
+            return {
                 user: result.user,
                 company: result.company,
-                token
-            }
-        } catch (error){
-            throw error
+                token,
+            };
+        } catch (error) {
+            throw error;
         }
-    }
-}
+    },
+};
