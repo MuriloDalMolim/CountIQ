@@ -9,6 +9,7 @@ import {
     Loader2,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { AxiosError } from 'axios';
 import api from '../../services/api';
 
 interface CompanyData {
@@ -27,6 +28,8 @@ export function Company() {
     const [formData, setFormData] = useState({
         name: '',
     });
+
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     useEffect(() => {
         async function loadCompany() {
@@ -51,6 +54,7 @@ export function Company() {
     const handleSave = async () => {
         if (!companyData) return;
 
+        setErrorMessage(null);
         try {
             setSaving(true);
             const response = await api.put(
@@ -60,15 +64,12 @@ export function Company() {
 
             setCompanyData(response.data);
             setIsEditing(false);
-        } catch (error: unknown) {
-            let errorMessage = 'Erro ao atualizar dados.';
-            if (error && typeof error === 'object' && 'response' in error) {
-                const axiosError = error as {
-                    response: { data: { error: string } };
-                };
-                errorMessage = axiosError.response?.data?.error || errorMessage;
-            }
-            alert(errorMessage);
+        } catch (error) {
+            const message =
+                error instanceof AxiosError
+                    ? error.response?.data?.error
+                    : undefined;
+            setErrorMessage(message ?? 'Erro ao atualizar dados.');
         } finally {
             setSaving(false);
         }
@@ -143,6 +144,12 @@ export function Company() {
                         <h3>Dados Cadastrais</h3>
                     </div>
 
+                    {errorMessage && (
+                        <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg mb-6">
+                            {errorMessage}
+                        </div>
+                    )}
+
                     {isEditing ? (
                         <div className="space-y-6">
                             <div>
@@ -180,7 +187,10 @@ export function Company() {
                 {isEditing && (
                     <div className="p-6 md:p-8 pt-4 flex flex-col md:flex-row gap-4 border-t border-gray-50">
                         <button
-                            onClick={() => setIsEditing(false)}
+                            onClick={() => {
+                                setIsEditing(false);
+                                setErrorMessage(null);
+                            }}
                             disabled={saving}
                             className="flex-1 flex items-center justify-center gap-2 py-4 border-2 border-gray-100 text-gray-500 rounded-2xl font-bold hover:bg-gray-50 transition-all"
                         >

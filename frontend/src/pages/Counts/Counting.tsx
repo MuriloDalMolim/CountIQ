@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft, Loader2, Save, Plus, Minus, Package } from 'lucide-react';
-import axios from 'axios';
+import { AxiosError } from 'axios';
 import { Button } from '../../components/ui/Button';
 import { PageHeader } from '../../components/PageHeader';
 import { SearchBar } from '../../components/SearchBar';
@@ -127,6 +127,7 @@ export function Counting() {
     const [loading, setLoading] = useState(true);
     const [session, setSession] = useState<CountingSession | null>(null);
     const [search, setSearch] = useState('');
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     const loadData = useCallback(async () => {
         if (!listId) return;
@@ -135,11 +136,11 @@ export function Counting() {
             const response = await api.get(`/listcount/${listId}`);
             setSession(response.data);
         } catch (error) {
-            if (axios.isAxiosError(error)) {
-                alert(
-                    error.response?.data?.error || 'Erro ao carregar sessão.',
-                );
-            }
+            const message =
+                error instanceof AxiosError
+                    ? error.response?.data?.error
+                    : undefined;
+            setErrorMessage(message ?? 'Erro ao carregar sessão.');
             navigate('/counts');
         } finally {
             setLoading(false);
@@ -156,6 +157,7 @@ export function Counting() {
         mode: 'increment' | 'set',
     ) => {
         if (!listId || !session) return;
+        setErrorMessage(null);
         try {
             await api.post(`/countitem/${listId}`, {
                 productId,
@@ -188,12 +190,11 @@ export function Counting() {
                 return { ...prev, count_item: newCountItems };
             });
         } catch (error) {
-            if (axios.isAxiosError(error)) {
-                alert(
-                    error.response?.data?.error ||
-                        'Erro ao atualizar quantidade.',
-                );
-            }
+            const message =
+                error instanceof AxiosError
+                    ? error.response?.data?.error
+                    : undefined;
+            setErrorMessage(message ?? 'Erro ao atualizar quantidade.');
         }
     };
 
@@ -240,6 +241,12 @@ export function Counting() {
                     </Button>
                 }
             />
+
+            {errorMessage && (
+                <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg mt-6">
+                    {errorMessage}
+                </div>
+            )}
 
             <div className="mb-8 mt-8">
                 <SearchBar

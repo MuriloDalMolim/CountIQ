@@ -6,8 +6,9 @@ import {
     Loader2,
     Filter,
     ClipboardList,
+    AlertTriangle,
 } from 'lucide-react';
-import axios from 'axios';
+import { AxiosError } from 'axios';
 import { Button } from '../../components/ui/Button';
 import { PageHeader } from '../../components/PageHeader';
 import { SearchBar } from '../../components/SearchBar';
@@ -31,6 +32,24 @@ interface ListCountBackend {
     };
 }
 
+interface PendingAction {
+    id: number;
+    type: 'close' | 'delete';
+}
+
+const PENDING_ACTION_CONFIG = {
+    close: {
+        title: 'Encerrar contagem',
+        message: 'Deseja encerrar esta contagem definitivamente?',
+        confirmLabel: 'Encerrar',
+    },
+    delete: {
+        title: 'Excluir contagem',
+        message: 'Tem certeza que deseja excluir esta contagem?',
+        confirmLabel: 'Excluir',
+    },
+};
+
 export function Counts() {
     const navigate = useNavigate();
     const [counts, setCounts] = useState<Count[]>([]);
@@ -39,6 +58,10 @@ export function Counts() {
     const [search, setSearch] = useState('');
     const [filterOption, setFilterOption] = useState<FilterOption>('all');
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [pendingAction, setPendingAction] = useState<PendingAction | null>(
+        null,
+    );
 
     const loadData = useCallback(async () => {
         try {
@@ -75,8 +98,11 @@ export function Counts() {
 
             formattedCounts.sort((a, b) => b.id - a.id);
             setCounts(formattedCounts);
-        } catch (error: unknown) {
+        } catch (error) {
             console.error('Erro ao carregar dados:', error);
+            setErrorMessage(
+                'Erro ao carregar contagens. Tente recarregar a página.',
+            );
         } finally {
             setLoading(false);
         }
@@ -87,45 +113,45 @@ export function Counts() {
     }, [loadData]);
 
     const handleStartCount = async (listId: number) => {
-        try {
-            const response = await countsService.start(listId);
-            navigate(`/counting/${response.data.listCountId}`);
-        } catch (error: unknown) {
-            if (axios.isAxiosError(error)) {
-                alert(
-                    error.response?.data?.error || 'Erro ao iniciar contagem.',
-                );
-            }
-        }
+        const response = await countsService.start(listId);
+        navigate(`/counting/${response.data.listCountId}`);
     };
 
-    const handleClose = async (id: number) => {
-        if (!window.confirm('Deseja encerrar esta contagem definitivamente?'))
-            return;
-        try {
-            await countsService.close(id);
-            await loadData();
-        } catch (error: unknown) {
-            if (axios.isAxiosError(error)) {
-                alert(
-                    error.response?.data?.error || 'Erro ao encerrar contagem.',
-                );
-            }
-        }
+    const handleClose = (id: number) => {
+        setPendingAction({ id, type: 'close' });
     };
 
-    const handleDelete = async (id: number) => {
-        if (!window.confirm('Tem certeza que deseja excluir esta contagem?'))
-            return;
+    const handleDelete = (id: number) => {
+        setPendingAction({ id, type: 'delete' });
+    };
+
+    const handleConfirmPendingAction = async () => {
+        if (!pendingAction) return;
+        setErrorMessage(null);
+
         try {
-            await countsService.delete(id);
-            setCounts((prev) => prev.filter((c) => c.id !== id));
-        } catch (error: unknown) {
-            if (axios.isAxiosError(error)) {
-                alert(
-                    error.response?.data?.error || 'Erro ao excluir contagem.',
+            if (pendingAction.type === 'close') {
+                await countsService.close(pendingAction.id);
+                await loadData();
+            } else {
+                await countsService.delete(pendingAction.id);
+                setCounts((prev) =>
+                    prev.filter((c) => c.id !== pendingAction.id),
                 );
             }
+        } catch (error) {
+            const message =
+                error instanceof AxiosError
+                    ? error.response?.data?.error
+                    : undefined;
+            setErrorMessage(
+                message ??
+                    (pendingAction.type === 'close'
+                        ? 'Erro ao encerrar contagem.'
+                        : 'Erro ao excluir contagem.'),
+            );
+        } finally {
+            setPendingAction(null);
         }
     };
 
@@ -173,6 +199,12 @@ export function Counts() {
                     </Button>
                 }
             />
+
+            {errorMessage && (
+                <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg mb-6">
+                    {errorMessage}
+                </div>
+            )}
 
             <div className="flex flex-col md:flex-row gap-4 mb-8">
                 <div className="flex-1">
@@ -253,6 +285,47 @@ export function Counts() {
                 }))}
                 onConfirmSelect={handleStartCount}
             />
+
+            {pendingAction && (
+                <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/60">
+                    <div className="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6 flex flex-col gap-4">
+                        <div className="flex items-center gap-3 text-amber-600">
+                            <div className="p-2 bg-amber-50 rounded-xl">
+                                <AlertTriangle className="w-6 h-6" />
+                            </div>
+                            <h3 className="font-bold text-gray-900 text-lg">
+                                {
+                                    PENDING_ACTION_CONFIG[pendingAction.type]
+                                        .title
+                                }
+                            </h3>
+                        </div>
+                        <p className="text-sm text-gray-600">
+                            {PENDING_ACTION_CONFIG[pendingAction.type].message}
+                        </p>
+                        <div className="flex gap-3 pt-2">
+                            <Button
+                                variant="outline"
+                                type="button"
+                                onClick={() => setPendingAction(null)}
+                                className="flex-1 py-3"
+                            >
+                                Cancelar
+                            </Button>
+                            <Button
+                                type="button"
+                                onClick={handleConfirmPendingAction}
+                                className="flex-1 py-3 bg-red-600 hover:bg-red-700 border-none"
+                            >
+                                {
+                                    PENDING_ACTION_CONFIG[pendingAction.type]
+                                        .confirmLabel
+                                }
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

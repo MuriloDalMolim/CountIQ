@@ -1,5 +1,6 @@
 import { X, ChevronDown } from 'lucide-react';
 import { useState } from 'react';
+import { AxiosError } from 'axios';
 import { Button } from '../../components/ui/Button';
 import { type Count } from './CountCard';
 
@@ -22,6 +23,7 @@ export function CountModal({
 }: CountModalProps) {
     const [selectedListId, setSelectedListId] = useState<string>('');
     const [loading, setLoading] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     if (!isOpen) return null;
 
@@ -29,12 +31,19 @@ export function CountModal({
         e.preventDefault();
         if (!selectedListId) return;
 
+        setErrorMessage(null);
         try {
             setLoading(true);
             await onConfirmSelect(Number(selectedListId));
             onClose();
         } catch (error) {
-            console.error(error);
+            const message =
+                error instanceof AxiosError
+                    ? error.response?.data?.error
+                    : undefined;
+            setErrorMessage(
+                message ?? 'Erro ao iniciar contagem. Tente novamente.',
+            );
         } finally {
             setLoading(false);
         }
@@ -54,6 +63,12 @@ export function CountModal({
                 </div>
 
                 <form className="p-6 space-y-4" onSubmit={handleSubmit}>
+                    {errorMessage && (
+                        <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg">
+                            {errorMessage}
+                        </div>
+                    )}
+
                     <div className="space-y-1.5">
                         <label className="text-sm font-bold text-gray-700">
                             Vincular a qual Lista?

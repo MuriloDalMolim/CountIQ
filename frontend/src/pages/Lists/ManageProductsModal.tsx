@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { X, Search, Plus, Trash2 } from 'lucide-react';
+import { X, Search, Plus, Trash2, AlertTriangle } from 'lucide-react';
 import { productListService } from '../../features/lists/productListService';
 import { productsService } from '../../features/products/services';
 import { Button } from '../../components/ui/Button';
@@ -14,6 +14,11 @@ interface ManageProductsModalProps {
     onSuccess: () => void;
 }
 
+interface PendingRemoval {
+    productId: number;
+    message: string;
+}
+
 export function ManageProductsModal({
     isOpen,
     onClose,
@@ -24,6 +29,10 @@ export function ManageProductsModal({
     const [listProducts, setListProducts] = useState<Product[]>([]);
     const [search, setSearch] = useState('');
     const [loading, setLoading] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [pendingRemoval, setPendingRemoval] = useState<PendingRemoval | null>(
+        null,
+    );
 
     useEffect(() => {
         if (isOpen) {
@@ -84,38 +93,61 @@ export function ManageProductsModal({
 
     async function handleAdd(barcode: string) {
         if (!list) return;
+        setErrorMessage(null);
         try {
             await productListService.insert(list.listId, barcode);
             await fetchData();
             onSuccess();
-        } catch (error: unknown) {
-            if (error instanceof AxiosError)
-                alert(error.response?.data?.error || 'Erro.');
+        } catch (error) {
+            const message =
+                error instanceof AxiosError
+                    ? error.response?.data?.error
+                    : undefined;
+            setErrorMessage(message ?? 'Erro ao adicionar produto.');
         }
     }
 
     async function handleRemove(productId: number) {
         if (!list) return;
+        setErrorMessage(null);
         try {
             await productListService.remove(list.listId, productId);
             await fetchData();
             onSuccess();
-        } catch (error: unknown) {
+        } catch (error) {
             if (error instanceof AxiosError && error.response?.status === 409) {
-                if (
-                    confirm(
-                        `${error.response.data.error}\n\nDeseja forçar a exclusão?`,
-                    )
-                ) {
-                    await productListService.remove(
-                        list.listId,
-                        productId,
-                        true,
-                    );
-                    await fetchData();
-                    onSuccess();
-                }
+                setPendingRemoval({
+                    productId,
+                    message: error.response.data.error,
+                });
+            } else {
+                const message =
+                    error instanceof AxiosError
+                        ? error.response?.data?.error
+                        : undefined;
+                setErrorMessage(message ?? 'Erro ao remover produto.');
             }
+        }
+    }
+
+    async function handleConfirmForceRemove() {
+        if (!list || !pendingRemoval) return;
+        try {
+            await productListService.remove(
+                list.listId,
+                pendingRemoval.productId,
+                true,
+            );
+            await fetchData();
+            onSuccess();
+        } catch (error) {
+            const message =
+                error instanceof AxiosError
+                    ? error.response?.data?.error
+                    : undefined;
+            setErrorMessage(message ?? 'Erro ao remover produto.');
+        } finally {
+            setPendingRemoval(null);
         }
     }
 
@@ -140,6 +172,12 @@ export function ManageProductsModal({
                         <X className="w-6 h-6" />
                     </button>
                 </div>
+
+                {errorMessage && (
+                    <div className="mx-4 md:mx-8 mt-4 bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg shrink-0">
+                        {errorMessage}
+                    </div>
+                )}
 
                 <div className="flex-1 overflow-hidden flex flex-col md:grid md:grid-cols-2">
                     <div className="p-4 md:p-6 border-b md:border-b-0 md:border-r border-gray-100 flex flex-col gap-4 overflow-hidden flex-1 min-h-0">
@@ -241,6 +279,44 @@ export function ManageProductsModal({
                     </Button>
                 </div>
             </div>
+
+            {pendingRemoval && (
+                <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/60">
+                    <div className="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6 flex flex-col gap-4">
+                        <div className="flex items-center gap-3 text-amber-600">
+                            <div className="p-2 bg-amber-50 rounded-xl">
+                                <AlertTriangle className="w-6 h-6" />
+                            </div>
+                            <h3 className="font-bold text-gray-900 text-lg">
+                                Confirmar exclusão
+                            </h3>
+                        </div>
+                        <p className="text-sm text-gray-600">
+                            {pendingRemoval.message}
+                        </p>
+                        <p className="text-sm text-gray-600 font-medium">
+                            Deseja forçar a exclusão mesmo assim?
+                        </p>
+                        <div className="flex gap-3 pt-2">
+                            <Button
+                                variant="outline"
+                                type="button"
+                                onClick={() => setPendingRemoval(null)}
+                                className="flex-1 py-3"
+                            >
+                                Cancelar
+                            </Button>
+                            <Button
+                                type="button"
+                                onClick={handleConfirmForceRemove}
+                                className="flex-1 py-3 bg-red-600 hover:bg-red-700 border-none"
+                            >
+                                Forçar Exclusão
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
