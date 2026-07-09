@@ -1,13 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-    Package,
-    Plus,
-    ChevronLeft,
-    Filter,
-    Loader2,
-    ClipboardList,
-} from 'lucide-react';
+import { Package, Plus, ChevronLeft, Filter, Loader2 } from 'lucide-react';
 
 import { productsService } from '../../features/products/services';
 import { Button } from '../../components/ui/Button';
@@ -162,9 +155,9 @@ export function Products() {
                 <ProductTable products={filteredProducts} onEdit={handleEdit} />
             ) : (
                 <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-200">
-                    <ClipboardList className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                    <Package className="w-12 h-12 text-gray-300 mx-auto mb-4" />
                     <h3 className="text-lg font-bold text-gray-900">
-                        Nenhuma lista encontrada
+                        Nenhum produto encontrado
                     </h3>
                     <p className="text-gray-500">
                         Tente ajustar sua busca ou filtros.

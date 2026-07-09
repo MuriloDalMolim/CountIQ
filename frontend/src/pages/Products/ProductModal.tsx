@@ -4,6 +4,7 @@ import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { productsService } from '../../features/products/services';
 import { type Product } from './ProductTable';
+import { AxiosError } from 'axios';
 
 interface ProductModalProps {
     isOpen: boolean;
@@ -26,10 +27,15 @@ export function ProductModal({
         isInactive: productToEdit?.isInactive ?? false,
     });
 
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
     if (!isOpen) return null;
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
+        setErrorMessage(null);
+        setIsSubmitting(true);
         try {
             if (productToEdit) {
                 if (formData.isInactive !== productToEdit.isInactive) {
@@ -47,17 +53,18 @@ export function ProductModal({
             }
             onSuccess();
             onClose();
-        } catch (error: unknown) {
-            const errorMessage =
-                error instanceof Error
-                    ? error.message
-                    : 'Erro ao processar produto';
-
-            alert(errorMessage);
-            console.error(error);
+        } catch (error) {
+            const message =
+                error instanceof AxiosError
+                    ? error.response?.data?.error
+                    : undefined;
+            setErrorMessage(
+                message ?? 'Erro ao salvar produto. Tente novamente.',
+            );
+        } finally {
+            setIsSubmitting(false);
         }
     }
-
     return (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
             <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto">
@@ -72,6 +79,11 @@ export function ProductModal({
                 </div>
 
                 <form className="p-6 space-y-4" onSubmit={handleSubmit}>
+                    {errorMessage && (
+                        <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg">
+                            {errorMessage}
+                        </div>
+                    )}
                     <Input
                         label="Descrição do produto"
                         placeholder="Ex: Teclado Mecânico RGB"
@@ -130,11 +142,14 @@ export function ProductModal({
                         </Button>
                         <Button
                             type="submit"
+                            disabled={isSubmitting}
                             className="flex-1 py-3 bg-orange-700 hover:bg-orange-800 border-none"
                         >
-                            {productToEdit
-                                ? 'Salvar Alterações'
-                                : 'Cadastrar Produto'}
+                            {isSubmitting
+                                ? 'Salvando...'
+                                : productToEdit
+                                  ? 'Salvar Alterações'
+                                  : 'Cadastrar Produto'}
                         </Button>
                     </div>
                 </form>

@@ -1,6 +1,12 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LayoutList, Plus, ChevronLeft, Loader2, Filter } from 'lucide-react';
+import {
+    Plus,
+    ChevronLeft,
+    Loader2,
+    Filter,
+    ClipboardList,
+} from 'lucide-react';
 import axios from 'axios';
 import { Button } from '../../components/ui/Button';
 import { PageHeader } from '../../components/PageHeader';
@@ -155,7 +161,7 @@ export function Counts() {
                         ? 'Carregando...'
                         : `Total de ${filteredCounts.length} sessões`
                 }
-                icon={<LayoutList className="w-6 h-6 text-white" />}
+                icon={<ClipboardList className="w-6 h-6 text-white" />}
                 iconBgColor="bg-orange-600"
                 action={
                     <Button
@@ -226,9 +232,9 @@ export function Counts() {
                 </div>
             ) : (
                 <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-200">
-                    <LayoutList className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                    <ClipboardList className="w-12 h-12 text-gray-300 mx-auto mb-4" />
                     <h3 className="text-lg font-bold text-gray-900">
-                        Nenhuma lista encontrada
+                        Nenhuma contagem encontrada
                     </h3>
                     <p className="text-gray-500">
                         Tente ajustar sua busca ou filtros.
