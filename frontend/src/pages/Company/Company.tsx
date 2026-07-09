@@ -76,8 +76,11 @@ export function Company() {
 
     if (loading) {
         return (
-            <div className="flex h-screen items-center justify-center">
-                <Loader2 className="w-10 h-10 text-brand-500 animate-spin" />
+            <div className="flex justify-center py-20">
+                <Loader2 className="w-12 h-12 text-brand-500 animate-spin" />
+                <p className="text-gray-500 font-medium">
+                    Buscando dados no servidor...
+                </p>
             </div>
         );
     }
@@ -89,7 +92,7 @@ export function Company() {
                 className="flex items-center gap-2 text-gray-500 hover:text-brand-600 mb-6 font-medium transition-colors text-sm group"
             >
                 <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-                Voltar ao Dashboard
+                <span className="text-base">Voltar à página inicial</span>
             </button>
 
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">

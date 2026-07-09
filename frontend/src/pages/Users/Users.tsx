@@ -82,7 +82,7 @@ export function Users() {
                 className="flex items-center gap-2 text-gray-500 hover:text-brand-600 transition-colors mb-6 font-medium"
             >
                 <ChevronLeft className="w-4 h-4" />
-                <span className="text-base">Voltar ao Dashboard</span>
+                <span className="text-base">Voltar à página inicial</span>
             </button>
 
             <PageHeader
