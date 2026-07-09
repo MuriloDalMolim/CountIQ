@@ -7,7 +7,7 @@ import {
     Printer,
     AlertCircle,
 } from 'lucide-react';
-import axios from 'axios';
+import { AxiosError } from 'axios';
 import { Button } from '../../components/ui/Button';
 import { PageHeader } from '../../components/PageHeader';
 import { SearchBar } from '../../components/SearchBar';
@@ -31,10 +31,10 @@ interface CountItemData {
 interface CountingSession {
     listCountId: number;
     status: string;
-    updatedAt: string;
+    updateAt: string;
     count_item: CountItemData[];
     list: {
-        name: string;
+        description: string;
         product_list: ProductDetail[];
     };
 }
@@ -47,6 +47,7 @@ export function CountView() {
     const [loading, setLoading] = useState(true);
     const [session, setSession] = useState<CountingSession | null>(null);
     const [search, setSearch] = useState('');
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     const loadData = useCallback(async () => {
         if (!id) {
@@ -59,12 +60,11 @@ export function CountView() {
             const response = await api.get(`/listcount/${id}`);
             setSession(response.data);
         } catch (error) {
-            if (axios.isAxiosError(error)) {
-                alert(
-                    error.response?.data?.error ||
-                        'Erro ao carregar relatório.',
-                );
-            }
+            const message =
+                error instanceof AxiosError
+                    ? error.response?.data?.error
+                    : undefined;
+            setErrorMessage(message ?? 'Erro ao carregar relatório.');
             navigate('/counts');
         } finally {
             setLoading(false);
@@ -115,6 +115,9 @@ export function CountView() {
             <div className="flex flex-col items-center justify-center min-h-screen text-gray-500">
                 <AlertCircle className="w-12 h-12 mb-4 text-red-500" />
                 <p className="font-bold">Sessão não encontrada.</p>
+                {errorMessage && (
+                    <p className="text-sm text-gray-400 mt-2">{errorMessage}</p>
+                )}
                 <Button onClick={() => navigate('/counts')} className="mt-4">
                     Voltar
                 </Button>
@@ -132,7 +135,7 @@ export function CountView() {
 
             <PageHeader
                 title={`Relatório de Contagem #${id}`}
-                subtitle={`Lista: ${session.list?.name} | Atualizado em: ${formatDate(session.updatedAt)}`}
+                subtitle={`Lista: ${session.list?.description} | Atualizado em: ${formatDate(session.updateAt)}`}
                 icon={<FileText className="w-6 h-6 text-white" />}
                 iconBgColor="bg-orange-600"
                 action={
